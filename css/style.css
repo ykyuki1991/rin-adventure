@@ -1,0 +1,331 @@
+/* りんの大冒険 */
+* {
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  color: #fff;
+  /* ダブルタップ拡大・ピンチ・スクロールをブラウザにさせない */
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Arial Rounded MT Bold", "Yu Gothic", system-ui, sans-serif;
+}
+
+#game {
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: block;
+  touch-action: none;
+}
+
+#safeProbe {
+  position: fixed;
+  inset: 0;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* ---------- 画面（メニュー） ---------- */
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 3vh, 18px);
+  padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  text-align: center;
+}
+.screen.dim {
+  background: rgba(12, 14, 40, 0.62);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+h2 {
+  margin: 0;
+  font-size: clamp(22px, 8vh, 38px);
+  letter-spacing: 0.05em;
+  text-shadow: 0 3px 0 #1d3557, 0 0 14px rgba(0, 0, 0, 0.45);
+}
+h2.pop { animation: pop 0.5s cubic-bezier(.2, 1.6, .5, 1) both; color: #ffe66d; }
+@keyframes pop { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.msg {
+  margin: 0;
+  font-size: clamp(14px, 4.4vh, 20px);
+  line-height: 1.6;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.btn {
+  display: inline-block;
+  min-width: 8.5em;
+  padding: 0.45em 1.5em;
+  border-radius: 999px;
+  border: 3px solid #fff;
+  background: linear-gradient(#ffe066, #ffb703);
+  color: #5a3000;
+  font-weight: 800;
+  font-size: clamp(16px, 5.4vh, 26px);
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #c77d00, 0 8px 16px rgba(0, 0, 0, 0.3);
+  transition: transform 0.06s;
+}
+.btn.pressed { transform: translateY(4px); box-shadow: 0 1px 0 #c77d00, 0 3px 8px rgba(0, 0, 0, 0.3); }
+.btn.big { font-size: clamp(20px, 7vh, 32px); padding: 0.4em 2.2em; }
+.btn.small {
+  min-width: 6.5em;
+  font-size: clamp(13px, 4vh, 18px);
+  background: linear-gradient(#ffffff, #dfe7fd);
+  color: #1d3557;
+  box-shadow: 0 4px 0 #9fb3d9, 0 6px 12px rgba(0, 0, 0, 0.25);
+}
+.btn.small.pressed { box-shadow: 0 1px 0 #9fb3d9; }
+
+/* ---------- タイトル ---------- */
+.logo {
+  margin: 0;
+  font-size: clamp(38px, 16vh, 80px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+}
+.logo span {
+  display: inline-block;
+  color: #fff;
+  -webkit-text-stroke: 0.08em #1d3557;
+  paint-order: stroke fill;
+  text-shadow: 0 0.09em 0 #1d3557, 0 0.14em 0.2em rgba(0, 0, 0, 0.35);
+  animation: bounce 2.4s ease-in-out infinite;
+}
+.logo span:nth-child(1) { color: #ff5a5f; animation-delay: 0s; }
+.logo span:nth-child(2) { color: #ffb703; animation-delay: 0.1s; }
+.logo span:nth-child(3) { color: #8ac926; animation-delay: 0.2s; }
+.logo span:nth-child(4) { color: #4cc9f0; animation-delay: 0.3s; }
+.logo span:nth-child(5) { color: #9b5de5; animation-delay: 0.4s; }
+.logo span:nth-child(6) { color: #ff70a6; animation-delay: 0.5s; }
+@keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-0.12em); } }
+.subtitle {
+  margin: 0;
+  font-size: clamp(13px, 4.2vh, 20px);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 0 #1d3557;
+}
+.hint {
+  margin: 0;
+  font-size: clamp(11px, 3.2vh, 14px);
+  background: rgba(0, 0, 0, 0.45);
+  padding: 6px 12px;
+  border-radius: 10px;
+}
+
+/* ---------- あそびかた ---------- */
+.help {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 18px;
+  max-width: 900px;
+  text-align: left;
+  font-size: clamp(10.5px, 3.2vh, 15px);
+  line-height: 1.35;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 12px 16px;
+  border-radius: 14px;
+}
+.help b { display: inline-block; margin-right: 6px; color: #aee6ff; }
+.c-red { color: #ff8a8e !important; }
+.c-purple { color: #d0a8ff !important; }
+.c-yellow { color: #ffe066 !important; }
+.c-pink { color: #ff8fc0 !important; }
+.c-rainbow { background: linear-gradient(90deg, #ff5a5f, #ffb703, #8ac926, #4cc9f0, #9b5de5); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+
+/* ---------- ステージを選ぶ（神戸の地図） ---------- */
+.select-screen { justify-content: flex-start; gap: 6px; background: linear-gradient(#bfe6ff, #e9f7ff); }
+.select-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.select-head h2 { font-size: clamp(18px, 6vh, 30px); color: #1d3557; text-shadow: 0 2px 0 #fff; }
+.select-head .btn.small { min-width: 5em; }
+.medal-total { min-width: 5em; text-align: right; font-weight: 800; color: #1d3557; font-size: clamp(12px, 3.8vh, 17px); }
+.map-wrap { position: relative; flex: 1 1 auto; width: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+#kobeMap { flex: 1 1 auto; min-width: 0; height: 100%; }
+#kobeMap svg { width: 100%; height: 100%; display: block; }
+.map-node { cursor: pointer; }
+.map-node .ring { transition: transform 0.08s; transform-box: fill-box; transform-origin: center; }
+.map-node.pressed .ring { transform: scale(0.9); }
+.map-node.sel .ring { stroke: #ff5a5f; stroke-width: 5; }
+.stage-info {
+  position: relative;
+  flex: 0 0 min(250px, 32%);
+  align-self: center;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1d3557;
+  border-radius: 16px;
+  border: 3px solid #1d3557;
+  padding: 8px 12px 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.si-no { font-weight: 800; font-size: clamp(11px, 3.4vh, 14px); color: #e76f51; }
+.si-name { font-weight: 900; font-size: clamp(15px, 5.4vh, 24px); line-height: 1.2; text-align: center; word-break: keep-all; overflow-wrap: anywhere; }
+.si-name.long { font-size: clamp(13px, 4.4vh, 19px); }
+.si-kana { font-size: clamp(10px, 3vh, 13px); color: #4a5a70; }
+.si-medals { display: flex; gap: 6px; margin: 2px 0 6px; }
+.stage-info .medal { border-color: #9aa9bd; background: #e6edf5; }
+.stage-info .medal.got { border-color: #c77d00; background: radial-gradient(circle at 35% 35%, #fff3b0 0 25%, #ffcc00 26% 100%); }
+.stage-info .btn { font-size: clamp(15px, 5vh, 22px); min-width: 7em; }
+.c-green { color: #a8e6a1 !important; }
+.c-blue { color: #9ad7ff !important; }
+
+.medal {
+  width: clamp(12px, 4vh, 18px);
+  height: clamp(12px, 4vh, 18px);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.3);
+  display: inline-block;
+}
+.medal.got {
+  border-color: #c77d00;
+  background: radial-gradient(circle at 35% 35%, #fff3b0 0 25%, #ffcc00 26% 100%);
+}
+
+.stats {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: clamp(14px, 4.6vh, 20px);
+  font-weight: 800;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 8px 18px;
+  border-radius: 14px;
+}
+.stats .medals { display: inline-flex; gap: 5px; vertical-align: middle; }
+
+/* ---------- タッチ操作ボタン ---------- */
+#controls {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+#dpadZone, #jumpZone {
+  position: absolute;
+  bottom: 0;
+  height: 75%;
+  pointer-events: auto;
+  touch-action: none;
+}
+#dpadZone { left: 0; width: 48%; }
+#jumpZone { right: 0; width: 40%; }
+#dpad {
+  position: absolute;
+  left: calc(max(12px, env(safe-area-inset-left)) + 6px);
+  bottom: calc(max(12px, env(safe-area-inset-bottom)) + 6px);
+  display: flex;
+  gap: clamp(8px, 2.5vh, 14px);
+}
+.pad-btn {
+  width: clamp(62px, 20vh, 92px);
+  height: clamp(62px, 20vh, 92px);
+  border-radius: 50%;
+  background: rgba(20, 30, 70, 0.32);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.05s, background 0.05s;
+}
+.pad-btn.pressed { background: rgba(255, 255, 255, 0.5); transform: scale(0.93); }
+.pad-btn svg { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)); }
+#jumpBtn {
+  position: absolute;
+  right: calc(max(14px, env(safe-area-inset-right)) + 8px);
+  bottom: calc(max(12px, env(safe-area-inset-bottom)) + 10px);
+  width: clamp(76px, 25vh, 112px);
+  height: clamp(76px, 25vh, 112px);
+  background: rgba(230, 57, 70, 0.6);
+  color: #fff;
+  font-weight: 900;
+  font-size: clamp(13px, 4.2vh, 18px);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+#jumpBtn.pressed { background: rgba(255, 90, 95, 0.85); }
+
+.icon-btn {
+  position: fixed;
+  z-index: 11;
+  top: calc(max(8px, env(safe-area-inset-top)) + 2px);
+  right: calc(max(10px, env(safe-area-inset-right)) + 4px);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.icon-btn i { display: block; width: 5px; height: 16px; border-radius: 2px; background: #fff; }
+.icon-btn.pressed { background: rgba(255, 255, 255, 0.35); }
+
+/* ---------- たてむき ---------- */
+#rotate {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #1d3557;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 800;
+}
+#rotate svg { animation: tilt 1.8s ease-in-out infinite; }
+@keyframes tilt { 0%, 30% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
+@media (orientation: portrait) and (pointer: coarse) {
+  #rotate { display: flex; }
+}

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#58c4f0">
+<meta name="description" content="りんが神戸の街を冒険する横スクロールアクションゲーム">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="りんの大冒険">
+<meta name="format-detection" content="telephone=no">
+<title>りんの大冒険</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="safeProbe"></div>
+<canvas id="game"></canvas>
+
+<div id="pauseBtn" class="icon-btn hidden" role="button" aria-label="ポーズ"><i></i><i></i></div>
+
+<!-- タッチ操作ボタン -->
+<div id="controls" class="hidden">
+  <div id="dpadZone">
+    <div id="dpad">
+      <div id="btnL" class="pad-btn" aria-label="左">
+        <svg viewBox="0 0 24 24" width="38" height="38"><path d="M15.5 4.5 7 12l8.5 7.5z" fill="#fff"/></svg>
+      </div>
+      <div id="btnR" class="pad-btn" aria-label="右">
+        <svg viewBox="0 0 24 24" width="38" height="38"><path d="M8.5 4.5 17 12l-8.5 7.5z" fill="#fff"/></svg>
+      </div>
+    </div>
+  </div>
+  <div id="jumpZone">
+    <div id="jumpBtn" class="pad-btn jump">ジャンプ</div>
+  </div>
+</div>
+
+<!-- タイトル -->
+<section id="scr-title" class="screen">
+  <p class="subtitle">〜 神戸の夜景を 取りもどせ 〜</p>
+  <h1 class="logo"><span>り</span><span>ん</span><span>の</span><span>大</span><span>冒</span><span>険</span></h1>
+  <div class="btn big" id="btnStart">遊ぶ</div>
+  <div class="row">
+    <div class="btn small" id="btnHelp">遊び方</div>
+    <div class="btn small sound-btn" id="btnSound1">音：オン</div>
+  </div>
+  <p class="hint hidden" id="installHint">Safari の共有ボタン →「ホーム画面に追加」で、アプリのように全画面で遊べるよ</p>
+</section>
+
+<!-- 遊び方 -->
+<section id="scr-help" class="screen dim hidden">
+  <h2>遊び方</h2>
+  <div class="help">
+    <div><b>◀ ▶</b> 歩く（押し続けると速くなる）</div>
+    <div><b class="c-red">ジャンプ</b> 長く押すほど高く飛ぶ</div>
+    <div><b>敵</b> 上からふむと たおせる</div>
+    <div><b class="c-purple">トゲぼう・ウニ・ゴロいわ</b> ふめない！ よけよう</div>
+    <div><b class="c-yellow">？ブロック</b> 下からたたくと 何かが出る</div>
+    <div><b class="c-yellow">金のリンゴ</b> 1回ぶつかっても平気、レンガも割れる</div>
+    <div><b class="c-rainbow">にじ色スター</b> しばらく無敵</div>
+    <div><b class="c-pink">ハート・豚まん</b> 残り人数＋1（コイン100枚でも＋1）</div>
+    <div><b class="c-green">乗り物</b> 電車・キリン・観覧車・船などに乗れる</div>
+    <div><b class="c-blue">滝・風・シャワー</b> 滝は下へ、風は横へ、ゾウのシャワーは上へ</div>
+    <div><b class="c-yellow">ひみつのメダル</b> 1ステージに3枚かくれているよ</div>
+    <div><b>坂道</b> 上り坂も下り坂も そのまま歩ける</div>
+  </div>
+  <div class="btn small" id="btnHelpBack">もどる</div>
+</section>
+
+<!-- ステージを選ぶ（神戸の地図） -->
+<section id="scr-select" class="screen select-screen hidden">
+  <div class="select-head">
+    <div class="btn small" id="btnSelBack">もどる</div>
+    <h2>冒険する場所を選ぼう</h2>
+    <div class="medal-total" id="medalTotal"></div>
+  </div>
+  <div class="map-wrap">
+    <div id="kobeMap"></div>
+    <div id="stageInfo" class="stage-info hidden">
+      <div class="si-no" id="siNo"></div>
+      <div class="si-name" id="siName"></div>
+      <div class="si-kana" id="siKana"></div>
+      <div class="si-medals medals" id="siMedals"></div>
+      <div class="btn" id="btnGo">出発！</div>
+    </div>
+  </div>
+</section>
+
+<!-- ひと休み -->
+<section id="scr-pause" class="screen dim hidden">
+  <h2>ひと休み</h2>
+  <div class="btn" id="btnResume">続ける</div>
+  <div class="row">
+    <div class="btn small" id="btnRetry">最初から</div>
+    <div class="btn small" id="btnPauseSel">ステージを選ぶ</div>
+    <div class="btn small sound-btn" id="btnSound2">音：オン</div>
+  </div>
+</section>
+
+<!-- ステージクリア -->
+<section id="scr-clear" class="screen dim hidden">
+  <h2 class="pop">ステージクリア！</h2>
+  <div id="clearStats" class="stats"></div>
+  <div class="btn" id="btnNext">次のステージへ</div>
+  <div class="btn small" id="btnClearSel">ステージを選ぶ</div>
+</section>
+
+<!-- ゲームオーバー -->
+<section id="scr-over" class="screen dim hidden">
+  <h2>ゲームオーバー</h2>
+  <p class="msg">大丈夫！ もう一度 挑戦しよう</p>
+  <div class="btn" id="btnOverRetry">もう一度</div>
+  <div class="btn small" id="btnOverSel">ステージを選ぶ</div>
+</section>
+
+<!-- エンディング -->
+<section id="scr-ending" class="screen dim hidden">
+  <h2 class="pop">おめでとう！</h2>
+  <p class="msg">りんは キングスライムを やっつけて<br>神戸の夜景に 光を取りもどした！</p>
+  <div id="endStats" class="stats"></div>
+  <div class="btn" id="btnEndTitle">タイトルへ</div>
+</section>
+
+<!-- たてむきのとき -->
+<div id="rotate">
+  <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+    <rect x="20" y="8" width="24" height="44" rx="5" fill="none" stroke="#fff" stroke-width="4"/>
+    <path d="M50 44a18 18 0 0 1-12 12" fill="none" stroke="#ffd23f" stroke-width="4" stroke-linecap="round"/>
+    <path d="M36 52l3 5 5-3" fill="none" stroke="#ffd23f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <p>横向きにしてね</p>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
