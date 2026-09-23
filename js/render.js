@@ -359,6 +359,15 @@ export class Renderer {
 
     if (this.debug) this.drawDebug(ctx, game);
 
+    // ダメージを受けたときの赤いフラッシュ（画面のふちが赤くなる）
+    if (game.flashT > 0) {
+      ctx.setTransform(K, 0, 0, K, this.offX, this.offY);
+      const a = Math.min(1, game.flashT / 0.3);
+      const g = ctx.createRadialGradient(this.viewW / 2, VIEW_H / 2, VIEW_H * 0.35, this.viewW / 2, VIEW_H / 2, this.viewW * 0.7);
+      g.addColorStop(0, 'rgba(255,40,60,0)'); g.addColorStop(1, `rgba(255,40,60,${0.55 * a})`);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, this.viewW, VIEW_H);
+    }
+
     ctx.restore();
 
     if (!game.demo) {
@@ -390,6 +399,7 @@ export class Renderer {
       case 'rock': return S.drawRock(ctx, e, P, time);
       case 'boss': return S.drawBoss(ctx, e, P, time);
       case 'boar': return S.drawBoar(ctx, e, P, time);
+      case 'wave': return S.drawWave(ctx, e, time);
       case 'penguin': return S.drawPenguin(ctx, e, P, time);
       case 'jelly': return S.drawJelly(ctx, e, P, time);
       case 'lantern': return S.drawLantern(ctx, e, P, time);
@@ -445,9 +455,14 @@ export class Renderer {
     ctx.fillRect(L + 5.8, y + 0.2, 1, 1.6); ctx.fillRect(L + 8, y + 0.2, 1, 1.6);
     }
     text('×' + s.lives, L + 13, y);
-    // コイン
-    S.drawCoin(ctx, L + 45, y, 0);
-    text('×' + String(s.coins).padStart(2, '0'), L + 52, y);
+    // コイン（ふえたときに少しはねる）
+    if (this.lastCoins !== s.coins) { if (this.lastCoins !== undefined && s.coins > this.lastCoins) this.coinPulse = 1; this.lastCoins = s.coins; }
+    const cp = (this.coinPulse || 0);
+    this.coinPulse = Math.max(0, cp - 0.08);
+    ctx.save(); ctx.translate(L + 45, y); ctx.scale(1 + cp * 0.35, 1 + cp * 0.35);
+    S.drawCoin(ctx, 0, 0, 0);
+    ctx.restore();
+    text('×' + String(s.coins).padStart(2, '0'), L + 52, y - cp * 1.5);
     // スコア
     text(String(s.score).padStart(7, '0'), L + 84, y);
     // ジャンプぐつ（のこり時間のゲージ）
@@ -482,6 +497,20 @@ export class Renderer {
       for (let i = 0; i < b.maxHp; i++) S.drawHeart(ctx, bx + 36 + i * 11, y + 16, 0, i < b.hp ? 0.7 : 0.35);
     }
     // ステージ名（ふりがなつき）
+    // お知らせ（おたすけ・ボス登場など）
+    const m = game.message;
+    if (m && !(game.banner > 0.3)) {
+      const a = Math.min(1, m.t / 0.4, (m.max - m.t) / 0.2);
+      ctx.globalAlpha = Math.max(0, a);
+      ctx.textAlign = 'center';
+      ctx.font = `bold 10px ${FONT}`;
+      const tw = ctx.measureText(m.text).width + 28;
+      ctx.fillStyle = 'rgba(20,24,48,0.6)';
+      S.rr(ctx, this.viewW / 2 - tw / 2, 44, tw, 20, 10); ctx.fill();
+      text(m.text, this.viewW / 2, 54.5, m.color);
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'left';
+    }
     if (game.banner > 0) {
       const a = Math.min(1, game.banner / 0.5);
       ctx.globalAlpha = a;

@@ -55,6 +55,7 @@ export class LevelBuilder {
     this.zones = [];
     this.checkpoints = [];
     this.medalCount = 0;
+    this.medalHints = [];
     this.startPos = { x: 2, y: 12 };
     this.goalPos = null;
     this.curMat = null;
@@ -69,6 +70,7 @@ export class LevelBuilder {
     if (this.curMat) this.mats.set(k, this.curMat); else this.mats.delete(k);
   }
   setContent(x, y, c) { this.contents.set(y * this.w + x, c); }
+  tileAt(x, y) { return x < 0 || x >= this.w || y < 0 || y >= ROWS ? -1 : this.tiles[y * this.w + x]; }
 
   // 見た目（素材）を指定してから置く。例：b.mat('brick', () => b.rect(...))
   mat(name, fn) { const prev = this.curMat; this.curMat = name; fn(); this.curMat = prev; return this; }
@@ -248,7 +250,40 @@ export class LevelBuilder {
   deco(type, x, y, opts = {}) { this.decos.push({ type, x, y, layer: 'back', ...opts }); return this; }
   // 駅名や地名の看板
   sign(x, text, kana = '', base = 13, style = 'station') { return this.deco('sign', x, base, { text, kana, style }); }
-  medal(x, y) { this.put(x, y, 'M'); return this; }
+  // はじめての人向けのヒント（ふきだし）。y はふきだしのしっぽの先のマス
+  hint(x, y, text) { return this.deco('hint', x, y, { text, layer: 'mid' }); }
+  // コインを山なりに並べる（x0 から x1 まで、いちばん高いところが h マス上）。かべの中には置かない
+  coinArc(x0, x1, y, h) {
+    for (let x = x0; x <= x1; x++) {
+      const u = (x - x0) / Math.max(1, x1 - x0);
+      const yy = Math.round(y - h * 4 * u * (1 - u));
+      if (this.tileAt(x, yy) === T.EMPTY && !this.medalAt(x, yy)) this.put(x, yy, 'o');
+    }
+    return this;
+  }
+  // コインを線の上に並べる（(x0,y0) から (x1,y1) へ、step マスおき）
+  coinLine(x0, y0, x1, y1, step = 3) {
+    for (let x = x0; x <= x1; x += step) {
+      const yy = Math.round(y0 + (y1 - y0) * (x - x0) / Math.max(1, x1 - x0));
+      if (this.tileAt(x, yy) === T.EMPTY && !this.medalAt(x, yy)) this.put(x, yy, 'o');
+    }
+    return this;
+  }
+  // 足場（地面・ケーブルなど）のすぐ上にコインを並べる（上から探して最初に見つかった足場の上）
+  coinsAbove(x0, x1, step = 2, fromRow = 0) {
+    for (let x = x0; x <= x1; x += step) {
+      for (let y = fromRow + 1; y < ROWS; y++) {
+        if (this.tileAt(x, y) !== T.EMPTY) {
+          if (this.tileAt(x, y - 1) === T.EMPTY && !this.medalAt(x, y - 1)) this.put(x, y - 1, 'o');
+          break;
+        }
+      }
+    }
+    return this;
+  }
+  medalAt(x, y) { return this.spawns.some(s => s.type === 'medal' && s.x === x && s.y === y); }
+  // hint: ステージ選択の画面に出すヒント（まだ取っていないメダルだけ）
+  medal(x, y, hint = '') { this.medalHints.push(hint); this.put(x, y, 'M'); return this; }
   checkpoint(x, base = 13) {
     const idx = this.checkpoints.length;
     this.checkpoints.push({ x, y: base - 1 });
@@ -268,7 +303,7 @@ export class LevelBuilder {
       themes: this.themes, goalLabel: this.goalLabel,
       tiles: this.tiles, contents: [...this.contents.entries()], mats: [...this.mats.entries()],
       spawns: this.spawns, decos: this.decos, zones: this.zones, checkpoints: this.checkpoints,
-      start: this.startPos, goal: this.goalPos, medalCount: this.medalCount
+      start: this.startPos, goal: this.goalPos, medalCount: this.medalCount, medalHints: this.medalHints
     };
   }
 }

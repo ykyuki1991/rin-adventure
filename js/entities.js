@@ -222,6 +222,8 @@ export class Boss extends Enemy {
     this.hurtT = 1.2;
     game.sfx('bossHit');
     game.shake(0.3);
+    game.hitStop(0.16);
+    if (this.hp > 0) game.popup(this.hp === 2 ? 'あと2回！' : 'あと1回！', this.cx, this.y - 6);
     if (this.hp <= 0) {
       this.dead = true; this.flipped = true;
       this.vy = -320; this.vx = 0;
@@ -256,6 +258,7 @@ export class Boss extends Enemy {
             this.vx = this.dir * (60 + lvl * 35);
             this.state = 'air';
             this.grounded = false;
+            this.groundY = this.y + this.h;   // 着地する場所のかげを出すため
             game.sfx('bossJump');
           }
         }
@@ -274,7 +277,34 @@ export class Boss extends Enemy {
       this.timer = [0.45, 0.75, 1.05][this.hp - 1] ?? 1;
       game.shake(0.3); game.sfx('thud');
       game.dust(this.cx, this.bottom, 10);
+      // 1回ふまれたら：着地のしょうげき波（ジャンプでよける）
+      if (this.hp <= 2) for (const d of [-1, 1]) game.entities.push(new Shockwave(this.cx + d * 16, this.bottom, d));
+      // 2回ふまれたら：ちびスライムを呼ぶ（ふむと高くはねられる）
+      if (this.hp <= 1 && game.entities.filter(e => e.kind === 'slime' && !e.dead).length < 2) {
+        const m = new Slime(0, 0);
+        m.x = this.cx - m.w / 2; m.y = this.y - 4; m.vy = -260; m.dir = p.cx < this.cx ? -1 : 1; m.awake = true;
+        game.entities.push(m);
+      }
     }
+  }
+}
+
+// ボスの着地のしょうげき波：地面を走る。ふめない（ジャンプでよける）
+export class Shockwave extends Enemy {
+  constructor(x, bottom, dir) {
+    super('wave', 0, 0, 12, 9);
+    this.x = x - 6; this.y = bottom - 9;
+    this.dir = dir; this.vx = dir * 120;
+    this.stompable = false; this.starImmune = true; this.awake = true;
+    this.life = 1.8; this.score = 0;
+  }
+  kill() { return false; }
+  update(game, dt) {
+    this.t += dt;
+    this.life -= dt;
+    this.x += this.vx * dt;
+    if (this.life <= 0) this.remove = true;
+    if (Math.random() < dt * 20) game.dust(this.cx, this.y + this.h, 1);
   }
 }
 
@@ -429,6 +459,8 @@ export class Tako extends Enemy {
     }
     if (this.hidden) {
       this.wait -= dt;
+      // とび出す前に水面にあわが出る（よけるための合図）
+      if (this.wait < 0.8 && Math.random() < dt * 16) game.bubble(this.cx + (Math.random() - 0.5) * 12, this.surf + 2);
       if (this.wait <= 0) { this.hidden = false; this.vy = -this.jumpV; game.splash(this.cx, this.surf, true); }
       return;
     }

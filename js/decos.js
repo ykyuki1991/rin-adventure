@@ -22,8 +22,23 @@ function tree(ctx, x, y, s, leaf, trunk = '#6d4a2d') {
 }
 
 // ===================== 飾り =====================
+// はじめての人向けのヒント（ふきだし）。(x, y) がふきだしのしっぽの先
+function drawHint(ctx, d, time) {
+  const lines = String(d.text).split('\n');
+  ctx.font = `bold 7px ${FONT}`;
+  const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 12, h = lines.length * 9 + 7;
+  const bob = Math.sin(time * 2.2 + d.x * 0.01) * 1.2;
+  const cx = d.x + 8, by = d.y - 5 + bob, bx = cx - w / 2, top = by - h;
+  ctx.fillStyle = 'rgba(0,0,0,0.18)'; rr(ctx, bx + 1, top + 1.5, w, h, 5); ctx.fill();
+  ctx.fillStyle = '#fffdf4'; rr(ctx, bx, top, w, h, 5); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(cx - 3.5, by - 0.5); ctx.lineTo(cx, by + 5); ctx.lineTo(cx + 3.5, by - 0.5); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#ffb703'; ctx.lineWidth = 1; rr(ctx, bx, top, w, h, 5); ctx.stroke();
+  lines.forEach((l, i) => text(ctx, l, cx, top + 7.5 + i * 9, 7, '#3a2e2a'));
+}
+
 export function drawDeco(ctx, d, theme, time, night) {
   const x = d.x, y = d.y; // y はその飾りの足元（地面）の高さ
+  if (d.type === 'hint') return drawHint(ctx, d, time);
   if (Art.ready && drawDecoArt(ctx, d, x, y, time, night)) return;
   switch (d.type) {
     case 'sign': return drawSign(ctx, d, night);

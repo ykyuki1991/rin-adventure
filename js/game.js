@@ -66,10 +66,22 @@ export class Game {
     p.powered = !opts.respawn && !!this.session.powered;
     p.visible = !this.demo;
     this.player = p;
+    // おたすけ：同じところで3回つづけてミスしたら、金のリンゴをもってスタート
+    this.assist = false;
+    if (opts.respawn && this.app && this.app.failStreak >= 3) {
+      p.powered = true; p.powerFlash = 0.8;
+      this.assist = true;
+    }
+    this.message = null;
+    if (this.assist) this.say('おたすけ！ 金のリンゴを もらったよ', 3.2);
     this.state = this.demo ? 'demo' : 'play';
     this.stateT = 0;
     this.time = 0;
     this.shakeT = 0;
+    this.freeze = 0;        // ヒットストップ（ふんだ・ぶつかった瞬間に少しだけ止める）
+    this.queuedJump = false;
+    this.flashT = 0;        // ダメージのときの赤いフラッシュ
+    this.stageTime = opts.respawn ? (this.stageTime || 0) : 0; // クリアまでの時間（ミスしても続けて数える）
     this.banner = opts.respawn ? 1.6 : 3.0;
     this.starMusic = false;
     this.bossMusic = false;
@@ -83,6 +95,16 @@ export class Game {
 
   // ===================== 更新 =====================
   update(dt, input) {
+    // ヒットストップ中は時間を止める（ジャンプの入力だけ覚えておく）
+    if (this.freeze > 0 && this.state === 'play') {
+      this.freeze -= dt;
+      if (input && input.jumpPressed) this.queuedJump = true;
+      return;
+    }
+    if (this.queuedJump && input) { input.jumpPressed = true; this.queuedJump = false; }
+    if (this.flashT > 0) this.flashT -= dt;
+    if (this.message && (this.message.t -= dt) <= 0) this.message = null;
+    if (this.state === 'play') this.stageTime += dt;
     this.time += dt;
     this.input = input;
     if (this.banner > 0) this.banner -= dt;
@@ -124,6 +146,8 @@ export class Game {
       if (!c.active && p.cx >= c.x) {
         c.active = true;
         this.checkpointIdx = Math.max(this.checkpointIdx, c.idx);
+        if (this.app) this.app.failStreak = 0;
+        this.popup('中間ポイント！', c.x + 4, c.y - 6);
         this.sfx('check');
         this.sparkle(c.x + 10, c.y + 6, 8);
       }
@@ -225,7 +249,7 @@ export class Game {
         if (!boxOverlap(hb, e)) continue;
         // スター中は体当たりでたおせる
         if (p.star > 0 && !e.starImmune) {
-          if (e.kill(this, p.cx < e.cx ? 1 : -1)) { this.addScore(e.score, e.cx, e.y); this.sfx('kick'); }
+          if (e.kill(this, p.cx < e.cx ? 1 : -1)) { this.addScore(e.score, e.cx, e.y); this.sfx('kick'); this.hitStop(0.03); this.enemyCoin(e); }
           continue;
         }
         // ふんだ？
@@ -239,9 +263,13 @@ export class Game {
               p.vy = -430;
               p.vx = (p.cx < e.cx ? -1 : 1) * 110;
             } else {
-              this.sfx('stomp');
+              this.app.sound.play('stomp', p.combo);
               p.vy = -(input.jump ? PHYS.stompBounceHold : PHYS.stompBounce);
+              this.hitStop(0.05);
+              this.enemyCoin(e);
+              if (p.combo >= 2) this.popup(p.combo + 'れんぞく！', e.cx, e.y - 10);
             }
+            p.sq = -0.22;
             p.jumping = !!input.jump;
             p.y = Math.min(p.y, e.y - p.h + 2);
             this.dust(e.cx, e.y + 4, 4);
@@ -268,7 +296,7 @@ export class Game {
     const p = this.player;
     e.remove = true;
     if (e.kind === 'apple') {
-      if (!p.powered) { p.powered = true; p.powerFlash = 0.8; }
+      if (!p.powered) { p.powered = true; p.powerFlash = 0.8; this.say('パワーアップ！ 1回ぶつかっても平気・レンガもわれる', 2.8, '#ffe066'); }
       this.sfx('power');
       this.addScore(1000, e.cx, e.y);
       this.sparkle(p.cx, p.y + 6, 10);
@@ -279,9 +307,10 @@ export class Game {
       this.sfx('power');
       this.addScore(1000, e.cx, e.y);
       this.sparkle(p.cx, p.y + 12, 10);
-      this.popup('ジャンプぐつ！', p.cx, p.y - 8);
+      this.say('ジャンプぐつ！ 空中でもう1回ジャンプできるよ', 3, '#9ad7ff');
     } else if (e.kind === 'star') {
       p.star = STAR_TIME;
+      this.say('むてき！ 体当たりで 敵をたおせる', 2.5, '#ffd6ff');
       this.sfx('power');
       this.addScore(1000, e.cx, e.y);
       this.starMusic = true;
@@ -290,7 +319,10 @@ export class Game {
   }
 
   hurtPlayer() {
-    if (this.player.hurt(this)) this.killPlayer(false);
+    const p = this.player;
+    const was = p.powered;
+    if (p.hurt(this)) { this.hitStop(0.18); this.flashT = 0.3; this.killPlayer(false); return; }
+    if (was && !p.powered) { this.hitStop(0.12); this.shake(0.2); this.flashT = 0.3; this.sparkle(p.cx, p.y + 6, 8); }
   }
 
   killPlayer(fell) {
@@ -314,7 +346,7 @@ export class Game {
       p.vy += 1100 * dt;
       p.y += p.vy * dt;
     }
-    if (this.stateT > 2.8 && this.state === 'dying') {
+    if (this.stateT > (this.fellDeath ? 1.7 : 2.4) && this.state === 'dying') {
       this.state = 'dead';
       this.app.onPlayerDied();
     }
@@ -371,7 +403,7 @@ export class Game {
       const over = e.x < x1 && e.x + e.w > x0 && Math.abs(e.bottom - top) < 3;
       if (!over) continue;
       if (e.isEnemy && e.awake && !e.dead && !e.hidden) {
-        if (e.kill(this, e.cx < x0 + 8 ? -1 : 1)) { this.addScore(e.score, e.cx, e.y); this.sfx('kick'); }
+        if (e.kill(this, e.cx < x0 + 8 ? -1 : 1)) { this.addScore(e.score, e.cx, e.y); this.sfx('kick'); this.enemyCoin(e); }
       } else if (e.isItem && !e.behind) {
         e.vy = -260;
         e.dir = e.cx < x0 + 8 ? -1 : 1;
@@ -442,12 +474,23 @@ export class Game {
       this.particles.push({ type: 'drop', x: x + rand(-6, 6), y, vx: rand(-60, 60), vy: rand(-220, -80), life: 0.7, max: 0.7 });
     }
   }
+  bubble(x, y) {
+    this.particles.push({ type: 'bubble', x, y, vx: 0, vy: -18 - Math.random() * 14, life: 0.45, max: 0.45, r: 1 + Math.random() * 1.4 });
+  }
   dust(x, y, n = 4) {
     for (let i = 0; i < n; i++) {
       this.particles.push({ type: 'dust', x: x + rand(-6, 6), y: y - 2, vx: rand(-40, 40), vy: rand(-30, -5), life: 0.4, max: 0.4 });
     }
   }
   shake(t) { this.shakeT = Math.max(this.shakeT, t); }
+  hitStop(t) { this.freeze = Math.max(this.freeze, t); }
+  // 画面の上にお知らせを出す
+  say(text, dur = 2.5, color = '#ffffff') { this.message = { text, t: dur, max: dur, color }; }
+  // 敵をやっつけたときのコイン
+  enemyCoin(e) {
+    this.entities.push(new PopCoin(e.cx / TILE - 0.5, e.y / TILE + 0.6));
+    this.addCoin();
+  }
 
   updateParticles(dt) {
     for (const q of this.particles) {
@@ -513,6 +556,7 @@ export class Game {
   // ===================== ボス =====================
   onBossWake() {
     this.bossMusic = true;
+    this.say('キングスライムが あらわれた！ 上からふもう', 3, '#ffd6ff');
     if (!this.starMusic) this.app.sound.playBgm('boss');
   }
   onBossDying(b) {

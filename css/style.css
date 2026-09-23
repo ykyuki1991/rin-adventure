@@ -241,6 +241,13 @@ h2.pop { animation: pop 0.5s cubic-bezier(.2, 1.6, .5, 1) both; color: #ffe66d; 
   border-radius: 14px;
 }
 .stats .medals { display: inline-flex; gap: 5px; vertical-align: middle; }
+.stats .rec { color: #ffe66d; animation: recPop 0.8s ease-in-out infinite alternate; display: inline-block; }
+.stats small { font-size: 0.7em; opacity: 0.85; }
+@keyframes recPop { from { transform: scale(1); } to { transform: scale(1.12); } }
+/* ステージ選択：まだ取っていないメダルのヒント */
+.si-hints { font-size: clamp(10px, 2.8vh, 13px); line-height: 1.35; text-align: left; max-width: 230px; margin: 2px 0 4px; color: #1d3557; }
+.si-hints div::before { content: '？ '; color: #e0a100; font-weight: 900; }
+.si-best { font-size: clamp(10px, 2.8vh, 13px); color: #4a5a70; font-weight: 700; }
 
 /* ---------- タッチ操作ボタン ---------- */
 #controls {

@@ -19,6 +19,7 @@ export class Player {
     this.star = 0;          // スターのむてき時間
     this.boots = 0;         // ジャンプぐつの時間（高くとべて、空中でもう1回ジャンプできる）
     this.airJumps = 0;
+    this.sq = 0;            // つぶれ・のび（+ でつぶれる、- でのびる）
     this.walkPhase = 0;
     this.pose = 'stand';
     this.riding = null;     // 乗っている動く足場
@@ -37,6 +38,7 @@ export class Player {
     if (this.inv > 0) this.inv -= dt;
     if (this.star > 0) this.star -= dt;
     if (this.boots > 0) this.boots -= dt;
+    this.sq *= Math.exp(-dt * 12);
     if (this.powerFlash > 0) this.powerFlash -= dt;
 
     const dir = (input.right ? 1 : 0) - (input.left ? 1 : 0);
@@ -82,6 +84,7 @@ export class Player {
       this.grounded = false; this.jumping = true; this.riding = null;
       this.airMax = Math.max(P.walkSpeed, Math.abs(this.vx));
       this.airJumps = 1;
+      this.sq = -0.2;
       game.sfx('jump');
     } else if (this.jumpBuf > 0 && this.boots > 0 && this.airJumps > 0 && !this.grounded) {
       // ジャンプぐつ：空中でもう1回ジャンプ
@@ -89,6 +92,7 @@ export class Player {
       this.jumpBuf = 0; this.airJumps--;
       this.jumping = true; this.riding = null;
       game.sfx('jump');
+      this.sq = -0.25;
       if (game.dust) game.dust(this.cx, this.y + this.h + 2, 5);
     }
 
@@ -106,13 +110,23 @@ export class Player {
     const ext = f ? f.ext : 0;
     this.vx += ext;
     this.prevBottom = this.y + this.h;
+    const fallV = this.vy, wasGround = this.grounded;
     const r = moveBody(this, game.level, dt, { player: true, corner: true });
     if (!r.wallL && !r.wallR) this.vx -= ext;
     if (r.ceil) { this.jumping = false; game.onHeadBump(r, this); }
     this.grounded = r.ground;
-    if (r.ground) this.land();
+    if (r.ground) {
+      // 着地：高いところからほど大きくつぶれて、土けむりが出る
+      if (!wasGround && fallV > 180) {
+        this.sq = Math.min(0.28, fallV / 1500);
+        if (fallV > 300 && game.dust) game.dust(this.cx, this.y + this.h, 4);
+      }
+      this.land();
+    }
 
     this.updatePose(dir, dt);
+    // 切り返しの土けむり
+    if (this.pose === 'skid' && Math.random() < dt * 20 && game.dust) game.dust(this.cx - this.facing * 4, this.y + this.h, 1);
   }
 
   land() {

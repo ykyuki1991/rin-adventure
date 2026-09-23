@@ -64,7 +64,9 @@ export function drawRin(ctx, p, time) {
     const wings = p.boots > 0 && p.pose !== 'dead' && (p.boots > 3 || Math.floor(time * 10) % 2 === 0);
     const wf = 'bootwing/' + (p.grounded ? 0 : Math.floor(time * 12) % 2);
     if (wings) Art.draw(ctx, wf, x - p.facing * 2.5, y - 2.5, p.facing < 0);
-    Art.draw(ctx, rinFrame(p, time), x, y, p.pose !== 'dead' && p.facing < 0);
+    const sq = p.pose === 'dead' ? 0 : (p.sq || 0);
+    const sx = sq > 0 ? 1 + sq * 0.9 : 1 + sq * 0.55, sy = sq > 0 ? 1 - sq * 0.8 : 1 - sq * 0.8;
+    Art.draw(ctx, rinFrame(p, time), x, y, p.pose !== 'dead' && p.facing < 0, sx, sy);
     if (wings) Art.draw(ctx, wf, x + p.facing * 0.5, y - 1.5, p.facing < 0);
     if (p.star > 0) {
       for (let i = 0; i < 3; i++) {
@@ -534,6 +536,13 @@ export function drawBoss(ctx, e, P, time) {
   const squish = e.grounded && e.state === 'wait' ? Math.max(0, 1 - e.timer * 3) * 2 : 0;
   if (Art.has('boss/0')) {
     if (!e.flipped && e.grounded) shadow(ctx, cx, by, 20, 0.22);
+    // ジャンプ中は、着地する場所に大きなかげ（にげる合図）
+    if (!e.flipped && !e.grounded && e.groundY) {
+      const h = Math.max(0, e.groundY - by), k = Math.max(0.35, 1 - h / 160);
+      const land = cx + (e.vx || 0) * Math.max(0, (-(e.vy || 0) + Math.sqrt(Math.max(0, (e.vy || 0) ** 2 + 2 * 1800 * h))) / 1800);
+      ctx.fillStyle = `rgba(40,0,60,${0.18 + 0.2 * k})`;
+      ctx.beginPath(); ctx.ellipse(land, e.groundY - 1, 22 * k, 4 * k, 0, 0, Math.PI * 2); ctx.fill();
+    }
     Art.draw(ctx, flash ? 'boss/flash' : 'boss/0', cx, by, false, 1 + squish * 0.03, 1 - squish * 0.05);
     ctx.restore();
     return;
@@ -614,6 +623,20 @@ export function drawLantern(ctx, e, P, time) {
 export function drawTako(ctx, e, P, time) {
   if (e.hidden && !e.dead) return;
   if (!enemyArt(ctx, 'tako/' + (e.vy < 0 ? 0 : 1), e, false)) blob(ctx, e, '#e5533c');
+}
+// ボスのしょうげき波
+export function drawWave(ctx, e, time) {
+  const x = e.x + e.w / 2, by = e.y + e.h, d = e.dir;
+  const a = Math.min(1, e.life / 0.4);
+  ctx.globalAlpha = a;
+  for (let i = 0; i < 3; i++) {
+    const w = 7 - i * 1.6, h = 10 - i * 2.4, ox = -d * i * 3.5;
+    ctx.fillStyle = ['#b388ff', '#d6c2ff', '#ffffff'][i];
+    ctx.beginPath();
+    ctx.moveTo(x + ox - w, by); ctx.quadraticCurveTo(x + ox + d * w * 0.6, by - h * 1.2, x + ox + d * w, by);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 }
 export function drawBoots(ctx, cx, cy, t) {
   const s = 1 + Math.sin(t * 6) * 0.05;
@@ -846,6 +869,11 @@ export function drawParticle(ctx, q) {
     ctx.globalAlpha = a * 0.7;
     ctx.fillStyle = '#e9ecef';
     circle(ctx, q.x, q.y, 2.5 * (1.5 - a)); ctx.fill();
+    ctx.globalAlpha = 1;
+  } else if (q.type === 'bubble') {
+    ctx.globalAlpha = Math.min(1, a * 2);
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 0.7;
+    circle(ctx, q.x, q.y, q.r); ctx.stroke();
     ctx.globalAlpha = 1;
   } else if (q.type === 'brick') {
     ctx.save();

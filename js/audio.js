@@ -322,7 +322,7 @@ export class Sound {
   }
 
   // ---------- 効果音 ----------
-  play(name) {
+  play(name, v = 0) {
     if (!this.ctx || this.ctx.state !== 'running') return;
     const t = this.ctx.currentTime + 0.005, d = this.sfxGain;
     const seq = (notes, step, type = 'pulse25', gain = 0.1) =>
@@ -333,9 +333,13 @@ export class Sound {
         this.osc('pulse25', freq('B5'), t, 0.07, 0.08, d);
         this.osc('pulse25', freq('E6'), t + 0.07, 0.3, 0.08, d, { pluck: true });
         break;
-      case 'stomp':
-        this.osc('square', 320, t, 0.12, 0.09, d, { to: 90, slide: 0.1 });
+      case 'stomp': {
+        // れんぞくでふむほど 音が高くなる
+        const k = Math.pow(1.12, Math.min(8, Math.max(0, v - 1)));
+        this.osc('square', 320 * k, t, 0.12, 0.09, d, { to: 90 * k, slide: 0.1 });
+        this.osc('triangle', 660 * k, t + 0.02, 0.08, 0.06, d);
         break;
+      }
       case 'kick':
         this.osc('square', 500, t, 0.1, 0.07, d, { to: 150, slide: 0.08 });
         this.noiseHit(t, 0.08, 0.1, d, 1500);

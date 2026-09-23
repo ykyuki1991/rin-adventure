@@ -2,7 +2,7 @@
 const KEY = 'rin-adventure-save-v2';
 
 export function defaultSave() {
-  return { unlocked: 1, medals: {}, best: {}, cleared: {}, muted: false };
+  return { unlocked: 1, medals: {}, best: {}, times: {}, cleared: {}, muted: false, seenHints: {} };
 }
 
 export function loadSave() {

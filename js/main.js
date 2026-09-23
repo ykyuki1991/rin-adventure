@@ -36,6 +36,7 @@ class App {
     this.save = loadSave();
     this.sound.setMuted(!!this.save.muted);
     this.session = this.newSession();
+    this.failStreak = 0;   // 同じところで続けてミスした回数（おたすけに使う）
     this.game = new Game(this);
     this.isTouch = matchMedia('(any-pointer: coarse)').matches || navigator.maxTouchPoints > 0;
     this.mode = 'title';
@@ -101,6 +102,7 @@ class App {
     });
     tap('btnClearSel', () => this.goSelect());
     tap('btnOverRetry', () => this.startStage(this.game.stageIdx, true));
+    tap('btnOverCont', () => this.continueFromCheckpoint());
     tap('btnOverSel', () => this.goSelect());
     tap('btnEndTitle', () => this.goTitle());
     for (const id of ['btnSound1', 'btnSound2']) {
@@ -211,6 +213,12 @@ class App {
     $('siKana').textContent = locked ? 'まだ行けないよ' : def.kana;
     const got = this.save.medals[def.id] || [];
     $('siMedals').innerHTML = Array.from({ length: def.medalCount }, (_, m) => `<span class="medal${got.includes(m) ? ' got' : ''}"></span>`).join('');
+    // 一度クリアしたステージは、まだ取っていないメダルのヒントとベストタイムを出す
+    const cleared = !!this.save.cleared[def.id];
+    const hints = cleared ? (def.medalHints || []).map((h, m) => got.includes(m) || !h ? '' : `<div>${h}</div>`).join('') : '';
+    $('siHints').innerHTML = hints;
+    const bt = (this.save.times || {})[def.id];
+    $('siBest').textContent = cleared && bt !== undefined ? `ベストタイム ${Math.floor(bt / 60)}:${(bt % 60).toFixed(1).padStart(4, '0')}` : '';
     $('btnGo').classList.toggle('hidden', locked);
   }
 
@@ -219,6 +227,7 @@ class App {
   startStage(idx, fresh, retry = false) {
     if (fresh) this.session = this.newSession();
     if (retry) this.session.powered = false;
+    this.failStreak = 0;
     this.input.clear();
     this.game.start(idx);
     this.mode = 'play';
@@ -254,13 +263,31 @@ class App {
   // ミスしたとき（game.js から呼ばれる）
   onPlayerDied() {
     this.session.lives--;
+    this.failStreak++;
     if (this.session.lives > 0) {
       this.game.start(this.game.stageIdx, { respawn: true });
     } else {
       this.mode = 'over';
+      // 中間ポイントを通っていたら、そこから続けられる
+      const hasCp = this.game.checkpointIdx >= 0;
+      $('btnOverCont').classList.toggle('hidden', !hasCp);
+      $('btnOverRetry').classList.toggle('small', hasCp);
       this.showScreen('over');
       this.sound.playJingle('gameover');
     }
+  }
+
+  // ゲームオーバーのあと、中間ポイントから続ける（残り人数はもとにもどる）
+  continueFromCheckpoint() {
+    const powered = false;
+    this.session = this.newSession();
+    this.session.powered = powered;
+    this.input.clear();
+    this.game.start(this.game.stageIdx, { respawn: true });
+    this.mode = 'play';
+    this.acc = 0;
+    this.showScreen(null);
+    this.checkOrientation();
   }
 
   recordClear() {
@@ -270,6 +297,12 @@ class App {
     this.save.medals[def.id] = [...all].sort();
     this.save.cleared[def.id] = true;
     this.save.best[def.id] = Math.max(this.save.best[def.id] || 0, this.session.score);
+    // クリアタイムの記録
+    this.save.times = this.save.times || {};
+    const t = Math.round(g.stageTime * 10) / 10, old = this.save.times[def.id];
+    this.newRecord = old === undefined || t < old;
+    this.lastTime = t; this.prevTime = old;
+    if (this.newRecord) this.save.times[def.id] = t;
     this.save.unlocked = Math.max(this.save.unlocked, Math.min(LEVELS.length, g.stageIdx + 2));
     writeSave(this.save);
   }
@@ -282,9 +315,10 @@ class App {
   onStageClear() {
     this.recordClear();
     const g = this.game, def = g.def, s = this.session;
+    const fmt = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
     $('clearStats').innerHTML = `
       <span>メダル <span class="medals">${this.medalHtml(def, g.runMedals)}</span></span>
-      <span>コイン ${s.coins}</span>
+      <span>タイム ${fmt(this.lastTime)}${this.newRecord ? ' <b class="rec">しんきろく！</b>' : ` <small>（ベスト ${fmt(this.prevTime)}）</small>`}</span>
       <span>スコア ${String(s.score).padStart(7, '0')}</span>`;
     $('btnNext').classList.toggle('hidden', g.stageIdx + 1 >= LEVELS.length);
     this.mode = 'clear';

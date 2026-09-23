@@ -1,7 +1,7 @@
 // オフラインでも遊べるようにするための Service Worker
 // ネットにつながっているときは最新のファイルを取りに行き、つながらないときは保存しておいたファイルを使う
 // ファイルを追加したら ASSETS にも追加し、VERSION の数字を上げてください
-const VERSION = 'rin-adventure-v4';
+const VERSION = 'rin-adventure-v5';
 const ASSETS = [
   './',
   './index.html',
