@@ -1,4 +1,5 @@
 // ゲームの進行（1ステージ分）
+import { Art } from './art.js';
 import { TILE, T, PHYS, STAR_TIME } from './config.js';
 import { Level } from './level.js';
 import { LEVELS } from './levels.js';
@@ -30,6 +31,8 @@ export class Game {
   // opts.demo: タイトル画面の背景用
   start(stageIdx, opts = {}) {
     const def = LEVELS[stageIdx];
+    // このステージで使う背景の絵を用意する（ほかの場所の背景は片付ける）
+    Art.prepareBg([...new Set(def.themes.map(z => z.theme))], this.app && this.app.renderer ? this.app.renderer.K : 3);
     this.stageIdx = stageIdx;
     this.def = def;
     this.level = new Level(def);

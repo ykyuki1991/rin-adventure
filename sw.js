@@ -1,7 +1,7 @@
 // オフラインでも遊べるようにするための Service Worker
 // ネットにつながっているときは最新のファイルを取りに行き、つながらないときは保存しておいたファイルを使う
 // ファイルを追加したら ASSETS にも追加し、VERSION の数字を上げてください
-const VERSION = 'rin-adventure-v2';
+const VERSION = 'rin-adventure-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -24,6 +24,36 @@ const ASSETS = [
   './js/tiles.js',
   './js/themes.js',
   './js/decos.js',
+  './js/art.js',
+  './js/tileart.js',
+  './js/art-data.js',
+  // ART-START（tools/art/build.mjs が自動で書きかえます）
+  './art/chars.svg',
+  './art/enemies.svg',
+  './art/items.svg',
+  './art/tiles.svg',
+  './art/decos.svg',
+  './art/pf.svg',
+  './art/bg/yakumo-0.svg',
+  './art/bg/yakumo-1.svg',
+  './art/bg/yakumo-2.svg',
+  './art/bg/yakumo-3.svg',
+  './art/bg/yakumo-4.svg',
+  './art/bg/yakumo-5.svg',
+  './art/bg/kitano-0.svg',
+  './art/bg/kitano-1.svg',
+  './art/bg/kitano-2.svg',
+  './art/bg/kitano-3.svg',
+  './art/bg/kitano-4.svg',
+  './art/bg/meriken-0.svg',
+  './art/bg/meriken-1.svg',
+  './art/bg/meriken-2.svg',
+  './art/bg/meriken-3.svg',
+  './art/bg/harborland-0.svg',
+  './art/bg/harborland-1.svg',
+  './art/bg/harborland-2.svg',
+  './art/bg/harborland-3.svg',
+  // ART-END
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',

@@ -17,7 +17,7 @@ const theme = o => ({ ...base, ...o });
 export const THEMES = {
   // 八雲通・春日野道（下町・商店街）
   yakumo: theme({
-    sky: ['#62bff2', '#d4f0ff'], groundStyle: 'asphalt',
+    sky: ['#62bff2', '#d4f0ff'], skyStops: [[0, '#3c9de6'], [0.55, '#86cdf4'], [1, '#dcf2fc']], groundStyle: 'asphalt',
     ground: '#7f838c', groundDark: '#6a6e76', top: '#d3cbbd', topDark: '#a99f90', topLight: '#ece6da',
     hard: '#b9b4ab', hardLight: '#dedad2', hardDark: '#86817a', semiStyle: 'arcade', bird: 'crow'
   }),
@@ -47,7 +47,7 @@ export const THEMES = {
   }),
   // 北野・異人館
   kitano: theme({
-    sky: ['#7cc3ee', '#fdecd6'], groundStyle: 'stone',
+    sky: ['#7cc3ee', '#fdecd6'], skyStops: [[0, '#3f9fe8'], [0.5, '#8dd0f6'], [1, '#e9f7fb']], groundStyle: 'stone',
     ground: '#b09c82', groundDark: '#8d7a62', top: '#d6c5aa', topDark: '#b5a283', topLight: '#efe3cf',
     hard: '#b5543a', hardLight: '#d77a5e', hardDark: '#7c3422', semiStyle: 'plank', semi: '#f3efe6', semiDark: '#b9b1a1', bird: 'pigeon'
   }),
@@ -65,14 +65,14 @@ export const THEMES = {
   }),
   // メリケンパーク（夕方）
   meriken: theme({
-    sky: ['#3b4a8c', '#f7a36b'], groundStyle: 'concrete',
+    sky: ['#3b4a8c', '#f7a36b'], skyStops: [[0, '#4e418e'], [0.35, '#9a5a9e'], [0.62, '#e98a66'], [0.8, '#ffb46a'], [1, '#ffcf80']], groundStyle: 'concrete',
     ground: '#7d828c', groundDark: '#686d77', top: '#aeb3bb', topDark: '#8b9098', topLight: '#d3d7dd',
     hard: '#7d828c', hardLight: '#a8adb5', hardDark: '#565b64', semiStyle: 'plank', semi: '#a47551', semiDark: '#6d4c33',
     water: ['#6e8fd6', '#34549e', '#1d326b'], bird: 'gull', spiky: 'urchin'
   }),
   // ハーバーランド（夜）
   harborland: theme({
-    sky: ['#0b1233', '#34407a'], groundStyle: 'brickpave',
+    sky: ['#0b1233', '#34407a'], skyStops: [[0, '#060a24'], [0.55, '#142057'], [0.8, '#2b3478'], [1, '#4a4a88']], groundStyle: 'brickpave',
     ground: '#6e4a3f', groundDark: '#553830', top: '#916356', topDark: '#744c41', topLight: '#b58576',
     hard: '#8a4a3a', hardLight: '#b06a55', hardDark: '#5c2f24', semiStyle: 'plank', semi: '#8f6a4d', semiDark: '#5c4230',
     water: ['#3d5aa8', '#1c2f66', '#0e1a3d'], night: true, bird: 'gull', spiky: 'urchin', slime: 'purple'
@@ -329,6 +329,19 @@ function train(ctx, x, y, cars, color, stripe, winLit) {
     if (stripe) { ctx.fillStyle = stripe; ctx.fillRect(cx, y - 5, 40, 1.6); }
   }
 }
+// 背景の高架を走る電車（阪急マルーン）
+function bgTrain(ctx, x, y, n) {
+  for (let i = 0; i < n; i++) {
+    const cx = x + i * 31;
+    ctx.fillStyle = '#6e1a26'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx, y - 13, 30, 13, 2) : ctx.rect(cx, y - 13, 30, 13); ctx.fill();
+    ctx.fillStyle = '#8a2433'; ctx.fillRect(cx + 1, y - 12, 28, 5);
+    ctx.fillStyle = '#cfe6f2'; for (let k = 0; k < 4; k++) ctx.fillRect(cx + 3 + k * 7, y - 11, 4.5, 3.6);
+    ctx.fillStyle = '#e9e1cf'; ctx.fillRect(cx, y - 13, 30, 1.4);
+    ctx.fillStyle = '#3a3a40'; ctx.fillRect(cx + 4, y - 1, 5, 1.5); ctx.fillRect(cx + 21, y - 1, 5, 1.5);
+  }
+  ctx.strokeStyle = '#3a3a40'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(x + 12, y - 13); ctx.lineTo(x + 15, y - 18); ctx.lineTo(x + 18, y - 13); ctx.stroke();
+}
 function ship(ctx, x, y, s, color = '#f4f1ea', lit = false) {
   ctx.fillStyle = '#2c3e50';
   ctx.beginPath(); ctx.moveTo(x - 30 * s, y - 6 * s); ctx.lineTo(x + 34 * s, y - 6 * s); ctx.lineTo(x + 26 * s, y + 3 * s); ctx.lineTo(x - 26 * s, y + 3 * s); ctx.closePath(); ctx.fill();
@@ -364,7 +377,12 @@ export const BG = {
     dyn(ctx, cam, vw, time) { // 高架を走る電車
       const P = vw + 400, x = ((time * 90 - cam * 0.35) % P + P) % P - 200;
       train(ctx, x, 150, 4, '#7a1f2b', null, null);
-    }
+    },
+    // SVGの背景のとき：3枚目（高架のある層）のすぐ後ろに電車を描く
+    artDyn: { after: 3, draw(ctx, cam, vw, time) {
+      const P = vw + 500, x = ((time * 70 - cam * 0.3) % P + P) % P - 250;
+      bgTrain(ctx, x, 150, 5);
+    } }
   },
   zoo: {
     layers: [
@@ -485,7 +503,11 @@ export const BG = {
     dyn(ctx, cam, vw, time) {
       const P = vw + 500, x = ((time * 14 - cam * 0.2) % P + P) % P - 200;
       ship(ctx, x, 196, 0.7, '#f4f1ea', false);
-    }
+    },
+    artDyn: { after: 2, draw(ctx, cam, vw, time) {
+      const P = vw + 600, x = ((time * 10 - cam * 0.12) % P + P) % P - 200;
+      ship(ctx, x, 190, 0.8, '#f4eef0', true);
+    } }
   },
   harborland: {
     layers: [

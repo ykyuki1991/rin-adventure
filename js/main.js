@@ -1,4 +1,5 @@
 // りんの大冒険：全体のまとめ役（画面の切りかえ・ゲームループ）
+import { Art } from './art.js';
 import { STEP, START_LIVES } from './config.js';
 import { LEVELS } from './levels.js';
 import { Game } from './game.js';
@@ -42,6 +43,12 @@ class App {
     this.last = performance.now();
 
     this.setupUI();
+    // 絵の準備ができたら画面を表示する（遅いときも3秒で表示）
+    const cv = $('game');
+    cv.classList.add('art-loading');
+    const show = () => cv.classList.remove('art-loading');
+    Promise.all([Art.init(this.renderer.K), Art.prepareBg(['yakumo'], this.renderer.K)]).then(show, show);
+    setTimeout(show, 3000);
     this.goTitle();
 
     const onResize = () => { this.renderer.resize(); this.checkOrientation(); };
@@ -193,6 +200,8 @@ class App {
   selectNode(i) {
     this.selIdx = i;
     const def = LEVELS[i];
+    // 選んだ場所の背景を先に用意しておく
+    Art.prepareBg([...new Set(['yakumo', ...def.themes.map(z => z.theme)])], this.renderer.K);
     const locked = i + 1 > this.save.unlocked;
     for (const g of $('kobeMap').querySelectorAll('.map-node')) g.classList.toggle('sel', parseInt(g.dataset.i, 10) === i);
     $('stageInfo').classList.remove('hidden');

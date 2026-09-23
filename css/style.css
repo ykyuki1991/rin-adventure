@@ -24,6 +24,8 @@ html, body {
   font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Arial Rounded MT Bold", "Yu Gothic", system-ui, sans-serif;
 }
 
+#game.art-loading { opacity: 0; }
+#game { transition: opacity 0.35s; }
 #game {
   position: fixed;
   left: 0;

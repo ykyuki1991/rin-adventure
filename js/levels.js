@@ -18,7 +18,7 @@ function stage1() {
   b.pipe(25, 2);
   b.deco('bench', 21, 13);
   // 春日野道商店街（アーケードの屋根にも乗れる）
-  b.sign(29, '春日野道商店街', 'かすがのみちしょうてんがい', 13, 'board');
+  b.sign(36, '春日野道商店街', 'かすがのみちしょうてんがい', 6, 'board');
   b.mat('wood', () => b.stairs(30, 3));
   b.deco('shops', 33, 13, { w: 39 });
   b.mat('arcade', () => b.row(33, 6, '======================================='));
@@ -369,6 +369,8 @@ function stage7() {
   b.row(53, 8, '-----');
   b.row(50, 5, '-----');
   b.row(52, 2, '-----');
+  // タワーの中の足場（見た目）
+  for (const [bx, by] of [[49, 11], [53, 8], [50, 5], [52, 2]]) b.deco('beam', bx, by, { w: 5, layer: 'mid' });
   b.medal(54, 1);                       // メダル2：ポートタワーのてっぺん
   b.enemy('crab', 60).enemy('spiky', 66);
   b.deco('crane', 70, 13);

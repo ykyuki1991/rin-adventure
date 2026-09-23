@@ -5,6 +5,8 @@ import { THEMES, BG } from './themes.js';
 import { paintTile } from './tiles.js';
 import { drawDeco, drawPlatformLook, drawZone, drawGoal } from './decos.js';
 import { zoneActive, windDir } from './zones.js';
+import { Art } from './art.js';
+import { tileArt } from './tileart.js';
 
 const VARIANT_MATS = new Set(['container', 'parasol']);
 const FONT = '"Hiragino Maru Gothic ProN", "Hiragino Sans", "Arial Rounded MT Bold", sans-serif';
@@ -57,6 +59,7 @@ export class Renderer {
     this.offY = offY * dpr;
     this.tileCache.clear();
     this.bgCache.clear();
+    Art.init(this.K);
     // セーフエリア（iPhoneのノッチ）をゲーム内の大きさに変換
     const probe = document.getElementById('safeProbe');
     if (probe) {
@@ -73,6 +76,7 @@ export class Renderer {
 
   // ===================== タイル =====================
   getTile(theme, key) {
+    if (this.artVersion !== Art.version) { this.tileCache.clear(); this.artVersion = Art.version; }
     const ck = theme + '#' + key;
     let c = this.tileCache.get(ck);
     if (c) return c;
@@ -81,24 +85,40 @@ export class Renderer {
     c.width = size; c.height = size;
     const ctx = c.getContext('2d');
     ctx.scale(size / TILE, size / TILE);
-    paintTile(ctx, THEMES[theme], key);
+    // SVGの絵があればそれを重ねて描く（なければこれまでの絵）
+    const layers = Art.ready ? tileArt(theme, key) : null;
+    if (layers) for (const nm of layers) { if (Array.isArray(nm)) Art.draw(ctx, nm[0], nm[1], nm[2]); else Art.drawTile(ctx, nm); }
+    else paintTile(ctx, THEMES[theme], key.split(':')[0]);
     this.tileCache.set(ck, c);
     return c;
   }
 
   tileKey(L, t, tx, ty, time) {
     let k;
+    const solid = a => a !== T.EMPTY && a !== T.WATER && a !== T.COIN && a !== T.SEMI && a !== T.ISEMI && a !== T.SPIKE && a !== T.LAVA && a !== T.HIDDEN;
+    let extra = '';
     switch (t) {
       case T.GROUND: case T.FAKEG: {
         const a = L.get(tx, ty - 1);
         const top = !(a === T.GROUND || a === T.FAKEG || isSlope(a)) && ty > 0;
         k = (t === T.FAKEG ? 'fg' : 'g') + (top ? 'T' : '');
+        const le = L.get(tx - 1, ty), ri = L.get(tx + 1, ty);
+        // 地面の深さ（上に何マス地面が続くか）
+        let depth = 0;
+        while (depth < 4 && ty - depth - 1 >= 0) { const u = L.get(tx, ty - depth - 1); if (u === T.GROUND || u === T.FAKEG || isSlope(u)) depth++; else break; }
+        // まわりの様子（はしが切れているか）とばらつき
+        extra = ':' + (tx > 0 && !solid(le) ? 'l' : '') + (tx < L.w - 1 && !solid(ri) ? 'r' : '') + (tx % 6 === 3 ? 'c' : '') + depth + ':' + (((tx * 7 + ty * 13) ^ (tx >> 2)) & 7);
         break;
       }
       case T.BRICK: k = 'brick'; break;
       case T.QBLOCK: return '|q' + [0, 1, 2, 1, 0, 0][Math.floor(time * 6) % 6];
       case T.USED: return '|used';
-      case T.HARD: k = 'hard'; break;
+      case T.HARD: {
+        k = 'hard';
+        const a = L.get(tx, ty - 1);
+        extra = ':' + (solid(a) ? '' : 'T');
+        break;
+      }
       case T.FAKE: k = 'fake'; break;
       case T.PIPE: {
         const left = L.get(tx - 1, ty) !== T.PIPE;
@@ -120,8 +140,15 @@ export class Renderer {
       default: return null;
     }
     let mat = L.mat(tx, ty) || '';
-    if (VARIANT_MATS.has(mat)) mat += (tx % 4);
-    return mat + '|' + k;
+    if (mat === 'container') {
+      // コンテナは3マスで1個。はしに枠をつける
+      const same = (x, y) => L.mat(x, y) === 'container' && L.get(x, y) === T.HARD;
+      const g = Math.floor(tx / 3);
+      mat += (g % 4);
+      extra = ':' + (tx % 3 === 0 || !same(tx - 1, ty) ? 'L' : '') + (tx % 3 === 2 || !same(tx + 1, ty) ? 'R' : '') +
+        (!same(tx, ty - 1) ? 'T' : '') + (!same(tx, ty + 1) ? 'B' : '');
+    } else if (VARIANT_MATS.has(mat)) mat += (tx % 4);
+    return mat + '|' + k + extra;
   }
 
   drawTiles(game, camX, time) {
@@ -160,6 +187,24 @@ export class Renderer {
 
   // ===================== 背景 =====================
   getBackground(theme) {
+    const art = Art.getBg(theme);
+    if (!art && Art.hasBg(theme)) {
+      // SVGの背景を準備しているあいだは、空の色だけ（古い絵が一瞬見えないように）
+      const g = this.ctx.createLinearGradient(0, this.offY, 0, this.offY + VIEW_H * this.K);
+      const stops = THEMES[theme].skyStops || [[0, THEMES[theme].sky[0]], [1, THEMES[theme].sky[1]]];
+      for (const [o, c] of stops) g.addColorStop(o, c);
+      return { layers: [], fg: [], grad: g, art: true };
+    }
+    if (art) {
+      let bg = this.bgCache.get('art:' + theme);
+      if (bg && bg.src === art) return bg;
+      const g = this.ctx.createLinearGradient(0, this.offY, 0, this.offY + VIEW_H * this.K);
+      const stops = THEMES[theme].skyStops || [[0, THEMES[theme].sky[0]], [1, THEMES[theme].sky[1]]];
+      for (const [o, c] of stops) g.addColorStop(o, c);
+      bg = { layers: art.filter(l => !l.fg), fg: art.filter(l => l.fg), grad: g, dyn: BG[theme] && BG[theme].artDyn, src: art, art: true };
+      this.bgCache.set('art:' + theme, bg);
+      return bg;
+    }
     let bg = this.bgCache.get(theme);
     if (bg) return bg;
     const kb = Math.min(this.K, 2);
@@ -186,25 +231,51 @@ export class Renderer {
     ctx.globalAlpha = alpha;
     ctx.fillStyle = bg.grad;
     ctx.fillRect(this.offX, this.offY, this.viewW * K, VIEW_H * K);
+    const runDyn = () => {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.setTransform(K, 0, 0, K, this.offX, this.offY);
+      bg.dyn.draw(ctx, camX, this.viewW, time);
+      ctx.restore();
+    };
     bg.layers.forEach((layer, i) => {
-      const w = layer.w;
       // 夜の街の明かり（最後のステージでは、ボスをたおすまで暗い）
-      ctx.globalAlpha = alpha * (i === 1 && THEMES[theme].night && cityLight !== undefined ? cityLight : 1);
-      let sx = -((camX * layer.f) % w);
-      for (let x = sx; x < this.viewW; x += w) {
-        const x0 = Math.round(this.offX + x * K);
-        const x1 = Math.round(this.offX + (x + w) * K);
-        ctx.drawImage(layer.canvas, x0, this.offY, x1 - x0 + 1, Math.round(VIEW_H * K));
-      }
+      const dim = bg.art ? layer.dim : i === 1;
+      ctx.globalAlpha = alpha * (dim && THEMES[theme].night && cityLight !== undefined ? cityLight : 1);
+      this.drawLayer(layer, camX);
+      if (bg.art && bg.dyn && bg.dyn.after === i) runDyn();
     });
     ctx.globalAlpha = alpha;
-    if (bg.dyn) {
+    if (bg.dyn && !bg.art) {
       ctx.save();
       ctx.setTransform(K, 0, 0, K, this.offX, this.offY);
       bg.dyn(ctx, camX, this.viewW, time);
       ctx.restore();
     }
     ctx.globalAlpha = 1;
+  }
+
+  // 背景の1枚を横にくり返して描く
+  drawLayer(layer, camX) {
+    const ctx = this.ctx, K = this.K, w = layer.w;
+    const h = layer.h || VIEW_H, y = layer.y || 0;
+    const sx = -((((camX * layer.f) % w) + w) % w);
+    const y0 = Math.round(this.offY + y * K), y1 = Math.round(this.offY + (y + h) * K);
+    for (let x = sx; x < this.viewW; x += w) {
+      const x0 = Math.round(this.offX + x * K);
+      const x1 = Math.round(this.offX + (x + w) * K);
+      ctx.drawImage(layer.canvas, x0, y0, x1 - x0 + 1, y1 - y0);
+    }
+  }
+
+  // いちばん手前の植え込みなど（キャラクターより前）
+  drawForegrounds(L, camX) {
+    const center = camX + this.viewW / 2;
+    const theme = L.themeAtPx(center);
+    const bg = this.getBackground(theme);
+    if (!bg.fg || !bg.fg.length) return;
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    for (const layer of bg.fg) this.drawLayer(layer, camX);
   }
 
   // テーマが切りかわる場所では、背景をふわっと入れかえる
@@ -283,6 +354,8 @@ export class Renderer {
       }
     }
     for (const q of game.particles) S.drawParticle(ctx, q);
+    this.drawForegrounds(L, camX);
+    world();
 
     if (this.debug) this.drawDebug(ctx, game);
 
@@ -356,13 +429,16 @@ export class Renderer {
     };
     // 残り人数
     const y = Tp + 7;
+    if (Art.has('rin/icon')) Art.draw(ctx, 'rin/icon', L + 5, y);
+    else {
     ctx.fillStyle = '#ffd9b5';
     ctx.beginPath(); ctx.arc(L + 5, y, 5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#4a2a14';
     ctx.beginPath(); ctx.ellipse(L + 5, y - 1.5, 5.4, 3.8, 0, Math.PI, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#1b1b1b';
     ctx.fillRect(L + 5.8, y + 0.2, 1, 1.6); ctx.fillRect(L + 8, y + 0.2, 1, 1.6);
-    text('×' + s.lives, L + 12, y);
+    }
+    text('×' + s.lives, L + 13, y);
     // コイン
     S.drawCoin(ctx, L + 45, y, 0);
     text('×' + String(s.coins).padStart(2, '0'), L + 52, y);

@@ -26,8 +26,50 @@ export function starPath(ctx, cx, cy, r1, r2, n = 5, rot = -Math.PI / 2) {
   ctx.closePath();
 }
 
+import { Art } from './art.js';
+
+// 足元のかげ
+export function shadow(ctx, cx, by, w, a = 0.2) {
+  ctx.fillStyle = `rgba(20,20,40,${a})`;
+  ctx.beginPath(); ctx.ellipse(cx, by - 0.3, w, w * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+}
+
+function rinFrame(p, time) {
+  const pre = p.powered ? 'rinP/' : 'rin/';
+  switch (p.pose) {
+    case 'dead': return 'rin/dead';
+    case 'walk': return pre + 'run' + (Math.floor((((p.walkPhase % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 2)) % 4);
+    case 'jump': return pre + 'jump';
+    case 'fall': return pre + 'fall';
+    case 'skid': return pre + 'skid';
+    case 'climb': return pre + 'climb' + (Math.floor(p.y / 6) & 1);
+    case 'win': return pre + 'win';
+  }
+  if ((Math.floor(time * 10) % 37) === 0) return pre + 'blink';
+  return pre + (Math.floor(time * 1.6) % 2 ? 'idle1' : 'idle0');
+}
+
 // ===================== りん =====================
 export function drawRin(ctx, p, time) {
+  if (Art.has('rin/idle0')) {
+    const x = p.x + p.w / 2, y = p.y + p.h;
+    if (p.grounded && p.pose !== 'dead') shadow(ctx, x, y, 6.5);
+    if (p.star > 0) {
+      const hue = (time * 500) % 360;
+      const gr = ctx.createRadialGradient(x, y - 9, 2, x, y - 9, 16);
+      gr.addColorStop(0, `hsla(${hue},100%,70%,0.75)`); gr.addColorStop(1, `hsla(${(hue + 60) % 360},100%,60%,0)`);
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y - 9, 16, 0, Math.PI * 2); ctx.fill();
+    }
+    Art.draw(ctx, rinFrame(p, time), x, y, p.pose !== 'dead' && p.facing < 0);
+    if (p.star > 0) {
+      for (let i = 0; i < 3; i++) {
+        const a = time * 7 + i * 2.1;
+        ctx.fillStyle = `hsl(${(time * 600 + i * 120) % 360},100%,75%)`;
+        starPath(ctx, x + Math.cos(a) * 10, y - 9 + Math.sin(a * 1.3) * 10, 2.2, 0.8, 4); ctx.fill();
+      }
+    }
+    return;
+  }
   const x = p.x + p.w / 2, y = p.y + p.h;
   const pose = p.pose;
   ctx.save();
@@ -217,8 +259,27 @@ function eyes(ctx, cx, cy, dir, gap, rx, ry, angry = false) {
   }
 }
 
+// 敵をSVGの絵で描く（やっつけてひっくり返ったときは上下さかさま）
+function enemyArt(ctx, name, e, flipX, shadowW = 0) {
+  if (!Art.has(name)) return false;
+  const cx = e.x + e.w / 2, by = e.y + e.h;
+  if (e.flipped) {
+    ctx.save(); ctx.translate(cx, e.y + e.h / 2); ctx.scale(1, -1);
+    Art.draw(ctx, name, 0, e.h / 2, flipX);
+    ctx.restore();
+    return true;
+  }
+  if (shadowW && e.grounded !== false) shadow(ctx, cx, by, shadowW, 0.18);
+  return Art.draw(ctx, name, cx, by, flipX);
+}
+
 const SLIME_COLORS = { green: ['#70d255', '#3f9e2c'], teal: ['#48cae4', '#0096c7'], purple: ['#9b5de5', '#6a2fb3'] };
 export function drawSlime(ctx, e, P, time) {
+  {
+    const c = SLIME_COLORS[P.slime] ? P.slime : 'green';
+    const nm = e.dead && !e.flipped ? `slime/${c}/flat` : `slime/${c}/${Math.floor(e.t * 4) % 2}`;
+    if (enemyArt(ctx, nm, e, e.dir < 0, 7)) return;
+  }
   const cx = e.x + e.w / 2, by = e.y + e.h;
   const [body, dark] = SLIME_COLORS[P.slime] || SLIME_COLORS.green;
   ctx.save();
@@ -249,6 +310,7 @@ export function drawSlime(ctx, e, P, time) {
 }
 
 export function drawSpiky(ctx, e, P, time) {
+  if (enemyArt(ctx, (P.spiky === 'urchin' ? 'urchin/' : 'spiky/') + (Math.floor(e.t * 5) % 2), e, e.dir < 0, 7)) return;
   const cx = e.x + e.w / 2, by = e.y + e.h;
   const cy = by - 6.5;
   ctx.save();
@@ -293,6 +355,14 @@ export function drawSpiky(ctx, e, P, time) {
 export function drawBird(ctx, e, P, time) {
   const cx = e.x + e.w / 2, cy = e.y + e.h / 2;
   const kind = P.bird || 'chick';
+  {
+    const nm = `bird/${kind}/${Math.floor(e.t * 7) % 2}`;
+    if (Art.has(nm)) {
+      if (e.flipped) { ctx.save(); ctx.translate(cx, cy); ctx.scale(1, -1); Art.draw(ctx, nm, 0, 0, e.dir < 0); ctx.restore(); }
+      else Art.draw(ctx, nm, cx, cy, e.dir < 0);
+      return;
+    }
+  }
   ctx.save();
   flipIfDead(ctx, e);
   ctx.translate(cx, cy);
@@ -342,6 +412,7 @@ export function drawBird(ctx, e, P, time) {
 // カニ
 export function drawCrab(ctx, e, P, time) {
   const cx = e.x + e.w / 2, by = e.y + e.h;
+  if (enemyArt(ctx, e.dead && !e.flipped ? 'crab/flat' : 'crab/' + (Math.floor(e.t * 6) % 2), e, false, 8)) return;
   ctx.save();
   if (e.dead && !e.flipped) {
     ctx.fillStyle = '#e4572e'; ellipse(ctx, cx, by - 2, 8, 2.5); ctx.fill();
@@ -369,6 +440,7 @@ export function drawCrab(ctx, e, P, time) {
 
 export function drawFrog(ctx, e, P, time) {
   const cx = e.x + e.w / 2, by = e.y + e.h;
+  if (enemyArt(ctx, e.grounded ? 'frog/sit' : 'frog/jump', e, e.dir < 0, e.grounded ? 7 : 0)) return;
   ctx.save();
   flipIfDead(ctx, e);
   ctx.translate(cx, by);
@@ -404,6 +476,7 @@ export function drawFrog(ctx, e, P, time) {
 export function drawRock(ctx, e, P, time) {
   const x = e.x, y = e.y;
   const shakeX = e.state === 'land' && e.timer > 0.6 ? Math.sin(e.t * 60) * 0.6 : 0;
+  if (Art.has('rock/calm')) { Art.draw(ctx, e.angry ? 'rock/angry' : 'rock/calm', x + shakeX, y); return; }
   ctx.save();
   ctx.translate(shakeX, 0);
   // 下のトゲ
@@ -454,6 +527,12 @@ export function drawBoss(ctx, e, P, time) {
   }
   const flash = e.hurtT > 0 && Math.floor(e.hurtT * 16) % 2 === 0;
   const squish = e.grounded && e.state === 'wait' ? Math.max(0, 1 - e.timer * 3) * 2 : 0;
+  if (Art.has('boss/0')) {
+    if (!e.flipped && e.grounded) shadow(ctx, cx, by, 20, 0.22);
+    Art.draw(ctx, flash ? 'boss/flash' : 'boss/0', cx, by, false, 1 + squish * 0.03, 1 - squish * 0.05);
+    ctx.restore();
+    return;
+  }
   const body = flash ? '#ffffff' : '#6a4c93';
   const light = flash ? '#ffffff' : '#8f6ec5';
   ctx.fillStyle = flash ? '#dddddd' : '#45306a';
@@ -500,6 +579,7 @@ export function drawBoss(ctx, e, P, time) {
 
 // ===================== アイテム =====================
 export function drawCoin(ctx, cx, cy, t) {
+  if (Art.draw(ctx, 'coin/' + (Math.floor(t * 2.2) % 6), cx, cy)) return;
   const w = Math.abs(Math.cos(t * 3.5)) * 4.6 + 0.8;
   ctx.fillStyle = '#d18a00';
   ellipse(ctx, cx, cy, w + 0.9, 6.9); ctx.fill();
@@ -514,6 +594,7 @@ export function drawCoin(ctx, cx, cy, t) {
 }
 
 export function drawApple(ctx, cx, cy, t) {
+  if (Art.draw(ctx, 'apple', cx, cy, false, 1 + Math.sin(t * 6) * 0.04, 1 + Math.sin(t * 6) * 0.04)) return;
   const glow = 0.5 + Math.sin(t * 6) * 0.2;
   ctx.fillStyle = `rgba(255,230,120,${glow * 0.5})`;
   circle(ctx, cx, cy + 0.5, 8.5); ctx.fill();
@@ -531,6 +612,7 @@ export function drawApple(ctx, cx, cy, t) {
 
 export function drawHeart(ctx, cx, cy, t, size = 1, kind = 'heart') {
   const s = size * (1 + Math.sin(t * 8) * 0.05);
+  if (Art.draw(ctx, kind === 'nikuman' ? 'nikuman' : 'heart', cx, cy, false, s, s)) return;
   ctx.save();
   ctx.translate(cx, cy);
   ctx.scale(s, s);
@@ -554,6 +636,13 @@ export function drawHeart(ctx, cx, cy, t, size = 1, kind = 'heart') {
 }
 
 export function drawStar(ctx, cx, cy, t, r = 7) {
+  if (Art.has('star')) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.sin(t * 5) * 0.25);
+    const k = r / 7;
+    Art.draw(ctx, 'star', 0, 0, false, k, k);
+    ctx.restore();
+    return;
+  }
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(Math.sin(t * 5) * 0.25);
@@ -567,6 +656,11 @@ export function drawStar(ctx, cx, cy, t, r = 7) {
 }
 
 export function drawMedal(ctx, cx, cy, t, collected = true) {
+  if (Art.has('medal/0')) {
+    if (!collected) { Art.draw(ctx, 'medal/empty', cx, cy); return; }
+    Art.draw(ctx, 'medal/0', cx, cy, false, 0.8 + Math.abs(Math.cos(t * 1.8)) * 0.2, 1);
+    return;
+  }
   ctx.save();
   ctx.translate(cx, cy);
   ctx.scale(0.8 + Math.abs(Math.cos(t * 1.8)) * 0.2, 1);
@@ -594,6 +688,7 @@ export function drawMedal(ctx, cx, cy, t, collected = true) {
 // ===================== しかけ =====================
 export function drawCheckpoint(ctx, c, time) {
   const px = c.x + 1, top = c.y, bottom = c.y + c.h;
+  if (Art.draw(ctx, c.active ? 'cp/on' + (Math.floor(time * 5) % 2) : 'cp/off', px + 1, bottom)) return;
   ctx.fillStyle = '#6c757d';
   ctx.fillRect(px, top + 2, 2, bottom - top - 2);
   ctx.fillStyle = c.active ? '#ffd23f' : '#adb5bd';
