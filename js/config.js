@@ -10,6 +10,7 @@ export const STEP = 1 / 60;      // 1回の更新の時間
 
 export const START_LIVES = 5;    // 残り人数の初期値
 export const STAR_TIME = 10;     // スター（無敵）の時間
+export const BOOTS_TIME = 20;    // ジャンプぐつの時間
 export const HURT_INVINCIBLE = 1.8; // ダメージ後の無敵時間
 
 export const PHYS = {

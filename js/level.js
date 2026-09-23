@@ -90,6 +90,7 @@ export class LevelBuilder {
       case '?': this.set(x, y, T.QBLOCK); this.setContent(x, y, 'coin'); return;
       case 'P': this.set(x, y, T.QBLOCK); this.setContent(x, y, 'power'); return;
       case 'S': this.set(x, y, T.QBLOCK); this.setContent(x, y, 'star'); return;
+      case 'J': this.set(x, y, T.QBLOCK); this.setContent(x, y, 'boots'); return;
       case 'L': this.set(x, y, T.QBLOCK); this.setContent(x, y, 'heart'); return;
       case 'H': this.set(x, y, T.HIDDEN); this.setContent(x, y, 'heart'); return;
       case 'h': this.set(x, y, T.HIDDEN); this.setContent(x, y, 'coin'); return;

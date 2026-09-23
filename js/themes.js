@@ -23,89 +23,89 @@ export const THEMES = {
   }),
   // 王子動物園
   zoo: theme({
-    sky: ['#6cc4f5', '#e2f6ff'], ground: '#c79a62', groundDark: '#a67a45', top: '#6cc95a', topDark: '#44a236', topLight: '#a8ec8e',
+    sky: ['#6cc4f5', '#e2f6ff'], skyStops: [[0, '#48a8ee'], [0.55, '#92d3f6'], [1, '#e3f5fb']], ground: '#c79a62', groundDark: '#a67a45', top: '#6cc95a', topDark: '#44a236', topLight: '#a8ec8e',
     hard: '#c9a06a', hardLight: '#e8c592', hardDark: '#8c6a3f', water: ['#8fd9e8', '#4bb3c9', '#2b879c'], bird: 'chick'
   }),
   // 新神戸駅
   shinkobe: theme({
-    sky: ['#6ab9ec', '#dff3ff'], groundStyle: 'tile',
+    sky: ['#6ab9ec', '#dff3ff'], skyStops: [[0, '#3f9fe8'], [0.55, '#8dd0f6'], [1, '#e2f4fb']], groundStyle: 'tile',
     ground: '#8c9097', groundDark: '#767a82', top: '#c9ccd1', topDark: '#9fa3aa', topLight: '#eceef0',
     hard: '#b8bcc4', hardLight: '#dfe2e6', hardDark: '#848891', bird: 'chick'
   }),
   // 布引の滝（渓谷）
   falls: theme({
-    sky: ['#7fcbe0', '#e0f4ea'], groundStyle: 'rock',
+    sky: ['#7fcbe0', '#e0f4ea'], skyStops: [[0, '#4fb0d6'], [0.55, '#a2d9e4'], [1, '#e2f4ea']], groundStyle: 'rock',
     ground: '#76705f', groundDark: '#5c574a', top: '#5a9e4b', topDark: '#3d7a33', topLight: '#8fce7a',
     hard: '#8a867b', hardLight: '#b2ada1', hardDark: '#5d5a52', semiStyle: 'plank', semi: '#a87444', semiDark: '#6e4a2a',
     water: ['#bfeaf5', '#5fb8d6', '#2f86a8'], bird: 'chick', slime: 'teal'
   }),
   // 布引ロープウェイ・ハーブ園
   ropeway: theme({
-    sky: ['#58a8f2', '#e9f6ff'], groundStyle: 'flower', bodyStyle: 'stone',
+    sky: ['#58a8f2', '#e9f6ff'], skyStops: [[0, '#3c93e8'], [0.5, '#86c8f4'], [1, '#e8f5fb']], groundStyle: 'flower', bodyStyle: 'stone',
     ground: '#b9ad97', groundDark: '#948771', top: '#72cc5c', topDark: '#4ea63d', topLight: '#b1ee98',
     hard: '#8d99a6', hardLight: '#bcc6d0', hardDark: '#5c6873', steel: '#9aa5b1', steelDark: '#5f6b77', bird: 'bee'
   }),
   // 北野・異人館
-  kitano: theme({
+  kitano: theme({ heart: 'pudding',
     sky: ['#7cc3ee', '#fdecd6'], skyStops: [[0, '#3f9fe8'], [0.5, '#8dd0f6'], [1, '#e9f7fb']], groundStyle: 'stone',
     ground: '#b09c82', groundDark: '#8d7a62', top: '#d6c5aa', topDark: '#b5a283', topLight: '#efe3cf',
     hard: '#b5543a', hardLight: '#d77a5e', hardDark: '#7c3422', semiStyle: 'plank', semi: '#f3efe6', semiDark: '#b9b1a1', bird: 'pigeon'
   }),
   // 三宮
-  sannomiya: theme({
-    sky: ['#5fb0ef', '#e2f0ff'], groundStyle: 'tile',
+  sannomiya: theme({ heart: 'pudding',
+    sky: ['#5fb0ef', '#e2f0ff'], skyStops: [[0, '#3f9ae8'], [0.55, '#8ccbf4'], [1, '#e6f1fb']], groundStyle: 'tile',
     ground: '#8e939c', groundDark: '#777c85', top: '#c4b8a8', topDark: '#9d917f', topLight: '#e6dccd',
     hard: '#aab4c2', hardLight: '#d3dae3', hardDark: '#7b8593', semiStyle: 'arcade', bldg: '#b6c0cc', bird: 'pigeon'
   }),
   // 南京町
   nankin: theme({
-    sky: ['#ffae66', '#ffe6c9'], groundStyle: 'brickpave',
+    sky: ['#ffae66', '#ffe6c9'], skyStops: [[0, '#e9795a'], [0.45, '#ffb27a'], [0.8, '#ffd6a6'], [1, '#ffe9cf']], groundStyle: 'brickpave',
     ground: '#9c5846', groundDark: '#7a4133', top: '#c97a5f', topDark: '#a45b43', topLight: '#e8a58b',
     hard: '#c62828', hardLight: '#ef5350', hardDark: '#8e1b1b', semiStyle: 'lantern', bird: 'pigeon', heart: 'nikuman'
   }),
   // メリケンパーク（夕方）
-  meriken: theme({
+  meriken: theme({ heart: 'pudding',
     sky: ['#3b4a8c', '#f7a36b'], skyStops: [[0, '#4e418e'], [0.35, '#9a5a9e'], [0.62, '#e98a66'], [0.8, '#ffb46a'], [1, '#ffcf80']], groundStyle: 'concrete',
     ground: '#7d828c', groundDark: '#686d77', top: '#aeb3bb', topDark: '#8b9098', topLight: '#d3d7dd',
     hard: '#7d828c', hardLight: '#a8adb5', hardDark: '#565b64', semiStyle: 'plank', semi: '#a47551', semiDark: '#6d4c33',
     water: ['#6e8fd6', '#34549e', '#1d326b'], bird: 'gull', spiky: 'urchin'
   }),
   // ハーバーランド（夜）
-  harborland: theme({
+  harborland: theme({ heart: 'pudding',
     sky: ['#0b1233', '#34407a'], skyStops: [[0, '#060a24'], [0.55, '#142057'], [0.8, '#2b3478'], [1, '#4a4a88']], groundStyle: 'brickpave',
     ground: '#6e4a3f', groundDark: '#553830', top: '#916356', topDark: '#744c41', topLight: '#b58576',
     hard: '#8a4a3a', hardLight: '#b06a55', hardDark: '#5c2f24', semiStyle: 'plank', semi: '#8f6a4d', semiDark: '#5c4230',
     water: ['#3d5aa8', '#1c2f66', '#0e1a3d'], night: true, bird: 'gull', spiky: 'urchin', slime: 'purple'
   }),
   // 須磨海岸
-  suma: theme({
-    sky: ['#3fa9ff', '#cdefff'], groundStyle: 'sand',
+  suma: theme({ heart: 'akashiyaki',
+    sky: ['#3fa9ff', '#cdefff'], skyStops: [[0, '#2f96f0'], [0.55, '#7cc9f7'], [1, '#d4f0fb']], groundStyle: 'sand',
     ground: '#e8cf93', groundDark: '#d4b777', top: '#f6e6bb', topDark: '#e0c98f', topLight: '#fff6dc',
     hard: '#c89a62', hardLight: '#e6bf8c', hardDark: '#8c6a3f', semiStyle: 'parasol',
     water: ['#7fe3f0', '#29b6d6', '#1283b0'], bird: 'gull', spiky: 'urchin'
   }),
   // 舞子公園
-  maiko: theme({
-    sky: ['#58aaf0', '#e0f3ff'], ground: '#b08a5a', groundDark: '#8d6a40', top: '#6cbf55', topDark: '#469a37', topLight: '#a6e38d',
+  maiko: theme({ heart: 'akashiyaki',
+    sky: ['#58aaf0', '#e0f3ff'], skyStops: [[0, '#3f99ea'], [0.55, '#88cbf6'], [1, '#e2f3fb']], ground: '#b08a5a', groundDark: '#8d6a40', top: '#6cbf55', topDark: '#469a37', topLight: '#a6e38d',
     water: ['#6cc8ec', '#2a8fcc', '#155f99'], bird: 'gull'
   }),
   // 明石海峡大橋
-  bridge: theme({
-    sky: ['#4c9fe6', '#e3f3ff'], groundStyle: 'girder',
+  bridge: theme({ heart: 'akashiyaki',
+    sky: ['#4c9fe6', '#e3f3ff'], skyStops: [[0, '#3a8fe0'], [0.55, '#86c6f4'], [1, '#e3f3ff']], groundStyle: 'girder',
     ground: '#a9bbb5', groundDark: '#7d918a', top: '#8a8f95', topDark: '#5f646a', topLight: '#b6bbc1',
     hard: '#c7d6d0', hardLight: '#e6efec', hardDark: '#8fa39c', semiStyle: 'steel',
     water: ['#5bb4e6', '#1f6fb0', '#0f4478'], bird: 'gull'
   }),
   // 六甲山・摩耶山（夜）
   rokko: theme({
-    sky: ['#050a1f', '#1c2452'], groundStyle: 'grass',
+    sky: ['#050a1f', '#1c2452'], skyStops: [[0, '#050a1f'], [0.6, '#141d4a'], [1, '#2b3470']], groundStyle: 'grass',
     ground: '#4b3a30', groundDark: '#3a2c24', top: '#2f7a45', topDark: '#1f5a31', topLight: '#57a86a',
     hard: '#6b6a75', hardLight: '#8e8d99', hardDark: '#44434d', semi: '#7a5a3c', semiDark: '#4f3a26',
     rock: '#6b6a75', rockDark: '#44434d', night: true, bird: 'bat', slime: 'purple'
   }),
   // 掬星台（ボスの広場）
   kikusei: theme({
-    sky: ['#040818', '#1a2150'], groundStyle: 'plaza',
+    sky: ['#040818', '#1a2150'], skyStops: [[0, '#030616'], [0.5, '#10184a'], [1, '#2a3276']], groundStyle: 'plaza',
     ground: '#5d5f70', groundDark: '#474957', top: '#8a8ca0', topDark: '#6a6c7e', topLight: '#b0b2c4',
     hard: '#5d5f70', hardLight: '#8a8ca0', hardDark: '#3d3f4c', semiStyle: 'plank', semi: '#8a8ca0', semiDark: '#5d5f70',
     night: true, bird: 'bat', slime: 'purple'
@@ -342,6 +342,29 @@ function bgTrain(ctx, x, y, n) {
   ctx.strokeStyle = '#3a3a40'; ctx.lineWidth = 0.5;
   ctx.beginPath(); ctx.moveTo(x + 12, y - 13); ctx.lineTo(x + 15, y - 18); ctx.lineTo(x + 18, y - 13); ctx.stroke();
 }
+// 背景を走る新幹線（先頭は右）
+function bgShinkansen(ctx, x, y, n) {
+  for (let i = 0; i < n; i++) {
+    const cx = x + i * 34, last = i === n - 1;
+    ctx.fillStyle = '#f6f8fa';
+    if (last) { ctx.beginPath(); ctx.moveTo(cx, y - 12); ctx.lineTo(cx + 16, y - 12); ctx.quadraticCurveTo(cx + 32, y - 11, cx + 40, y - 2); ctx.lineTo(cx + 40, y); ctx.lineTo(cx, y); ctx.closePath(); ctx.fill(); }
+    else ctx.fillRect(cx, y - 12, 33.4, 12);
+    ctx.fillStyle = '#1f4fb4'; ctx.fillRect(cx, y - 4.6, last ? 36 : 33.4, 1.3);
+    ctx.fillStyle = '#2c3a52';
+    for (let k = 0; k < (last ? 2 : 5); k++) ctx.fillRect(cx + 3 + k * 6, y - 9.5, 3.6, 2.4);
+    if (last) { ctx.beginPath(); ctx.moveTo(cx + 18, y - 10.5); ctx.quadraticCurveTo(cx + 26, y - 10, cx + 30, y - 7.5); ctx.lineTo(cx + 20, y - 7.5); ctx.closePath(); ctx.fill(); }
+    ctx.fillStyle = '#5d6470'; ctx.fillRect(cx, y - 1.2, last ? 38 : 33.4, 1.2);
+  }
+}
+// 背景を走るポートライナー
+function bgPortliner(ctx, x, y, n) {
+  for (let i = 0; i < n; i++) {
+    const cx = x + i * 25;
+    ctx.fillStyle = '#f4f6f8'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx, y - 11, 24, 11, 3) : ctx.rect(cx, y - 11, 24, 11); ctx.fill();
+    ctx.fillStyle = '#cfe6f2'; ctx.fillRect(cx + 2, y - 9, 20, 4);
+    ctx.fillStyle = '#1f5fbf'; ctx.fillRect(cx, y - 3.6, 24, 1.4);
+  }
+}
 function ship(ctx, x, y, s, color = '#f4f1ea', lit = false) {
   ctx.fillStyle = '#2c3e50';
   ctx.beginPath(); ctx.moveTo(x - 30 * s, y - 6 * s); ctx.lineTo(x + 34 * s, y - 6 * s); ctx.lineTo(x + 26 * s, y + 3 * s); ctx.lineTo(x - 26 * s, y + 3 * s); ctx.closePath(); ctx.fill();
@@ -403,6 +426,11 @@ export const BG = {
     ]
   },
   shinkobe: {
+    // SVGの背景のとき：高架の上を新幹線が走る
+    artDyn: { after: 3, draw(ctx, cam, vw, time) {
+      const P = vw + 900, x = ((time * 150 - cam * 0.3) % P + P) % P - 600;
+      bgShinkansen(ctx, x, 160, 8);
+    } },
     layers: [
       { f: 0.06, w: 512, seed: 31, paint(ctx, w, r) { clouds(ctx, w, r, 4, 15, 50, 'rgba(255,255,255,0.9)'); } },
       { f: 0.2, w: 512, seed: 32, paint(ctx, w) { ridge(ctx, w, 80, [[2, 20], [4, 10], [9, 4]], '#5f9f7a', 0.9); } },
@@ -470,7 +498,11 @@ export const BG = {
     dyn(ctx, cam, vw, time) {
       const P = vw + 300, x = ((time * 70 - cam * 0.45) % P + P) % P - 150;
       train(ctx, x, 140, 3, '#f4f6f8', '#1f5fbf', null);
-    }
+    },
+    artDyn: { after: 3, draw(ctx, cam, vw, time) {
+      const P = vw + 400, x = ((time * 60 - cam * 0.28) % P + P) % P - 200;
+      bgPortliner(ctx, x, 150, 4);
+    } }
   },
   nankin: {
     layers: [
@@ -536,6 +568,10 @@ export const BG = {
     }
   },
   suma: {
+    artDyn: { after: 1, draw(ctx, cam, vw, time) {
+      const P = vw + 600, x = ((time * 8 - cam * 0.03) % P + P) % P - 200;
+      ship(ctx, x, 164, 0.4, '#ffffff', false);
+    } },
     layers: [
       { f: 0.05, w: 640, seed: 111, paint(ctx, w, r) {
         clouds(ctx, w, r, 4, 20, 60, 'rgba(255,255,255,0.9)');
@@ -554,6 +590,10 @@ export const BG = {
     }
   },
   maiko: {
+    artDyn: { after: 1, draw(ctx, cam, vw, time) {
+      const P = vw + 700, x = ((-time * 9 - cam * 0.03 + 400) % P + P) % P - 250;
+      ship(ctx, x, 186, 0.55, '#f2d7a3', false);
+    } },
     layers: [
       { f: 0.05, w: 640, seed: 121, paint(ctx, w, r) {
         clouds(ctx, w, r, 4, 15, 50, 'rgba(255,255,255,0.9)');
@@ -567,6 +607,13 @@ export const BG = {
     ]
   },
   bridge: {
+    artDyn: { after: 1, draw(ctx, cam, vw, time) {
+      const P = vw + 600;
+      const x1 = ((time * 16 - cam * 0.08) % P + P) % P - 250;
+      const x2 = ((-time * 11 - cam * 0.08 + 300) % P + P) % P - 250;
+      ship(ctx, x1, 196, 0.6, '#ffffff', false);
+      ship(ctx, x2, 214, 0.8, '#f2d7a3', false);
+    } },
     layers: [
       { f: 0.04, w: 640, seed: 131, paint(ctx, w, r) {
         clouds(ctx, w, r, 5, 15, 70, 'rgba(255,255,255,0.9)');

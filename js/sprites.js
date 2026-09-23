@@ -60,7 +60,12 @@ export function drawRin(ctx, p, time) {
       gr.addColorStop(0, `hsla(${hue},100%,70%,0.75)`); gr.addColorStop(1, `hsla(${(hue + 60) % 360},100%,60%,0)`);
       ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y - 9, 16, 0, Math.PI * 2); ctx.fill();
     }
+    // ジャンプぐつ：かかとに小さな羽（のこり3秒でちかちか）
+    const wings = p.boots > 0 && p.pose !== 'dead' && (p.boots > 3 || Math.floor(time * 10) % 2 === 0);
+    const wf = 'bootwing/' + (p.grounded ? 0 : Math.floor(time * 12) % 2);
+    if (wings) Art.draw(ctx, wf, x - p.facing * 2.5, y - 2.5, p.facing < 0);
     Art.draw(ctx, rinFrame(p, time), x, y, p.pose !== 'dead' && p.facing < 0);
+    if (wings) Art.draw(ctx, wf, x + p.facing * 0.5, y - 1.5, p.facing < 0);
     if (p.star > 0) {
       for (let i = 0; i < 3; i++) {
         const a = time * 7 + i * 2.1;
@@ -578,6 +583,44 @@ export function drawBoss(ctx, e, P, time) {
 }
 
 // ===================== アイテム =====================
+// ===================== 新しい敵（SVGの絵） =====================
+// 絵がまだ読みこめていないときは、色つきの丸で代わりに描く
+function blob(ctx, e, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.ellipse(e.x + e.w / 2, e.y + e.h / 2, e.w / 2, e.h / 2, 0, 0, Math.PI * 2); ctx.fill();
+}
+export function drawBoar(ctx, e, P, time) {
+  let nm;
+  if (e.dead && !e.flipped) nm = 'boar/flat';
+  else if (e.state === 'charge') nm = 'boar/run' + (Math.floor(e.t * 12) % 2);
+  else if (e.state === 'ready') nm = 'boar/ready';
+  else if (e.state === 'rest') nm = 'boar/rest';
+  else nm = 'boar/' + (Math.floor(e.t * 5) % 2);
+  const jit = e.state === 'ready' && !e.dead ? Math.sin(time * 60) * 0.5 : 0;
+  ctx.save(); ctx.translate(jit, 0);
+  if (!enemyArt(ctx, nm, e, e.dir < 0, 9)) blob(ctx, e, '#7a583f');
+  ctx.restore();
+}
+export function drawPenguin(ctx, e, P, time) {
+  const nm = e.dead && !e.flipped ? 'penguin/flat' : e.slideT > 0 ? 'penguin/slide' : 'penguin/' + (Math.floor(e.t * 4) % 2);
+  if (!enemyArt(ctx, nm, e, e.dir < 0, 7)) blob(ctx, e, '#2b3350');
+}
+export function drawJelly(ctx, e, P, time) {
+  if (!enemyArt(ctx, 'jelly/' + (e.rising ? 1 : 0), e, false)) blob(ctx, e, '#f2b3e4');
+}
+export function drawLantern(ctx, e, P, time) {
+  if (!enemyArt(ctx, 'lantern/' + (Math.floor(e.t * 5 + Math.sin(e.t * 13)) % 2 ? 1 : 0), e, e.dir < 0)) blob(ctx, e, '#e8473c');
+}
+export function drawTako(ctx, e, P, time) {
+  if (e.hidden && !e.dead) return;
+  if (!enemyArt(ctx, 'tako/' + (e.vy < 0 ? 0 : 1), e, false)) blob(ctx, e, '#e5533c');
+}
+export function drawBoots(ctx, cx, cy, t) {
+  const s = 1 + Math.sin(t * 6) * 0.05;
+  if (Art.draw(ctx, 'boots', cx, cy, false, s, s)) return;
+  ctx.fillStyle = '#ef4a3e'; ctx.fillRect(cx - 6, cy - 4, 12, 8);
+}
+
 export function drawCoin(ctx, cx, cy, t) {
   if (Art.draw(ctx, 'coin/' + (Math.floor(t * 2.2) % 6), cx, cy)) return;
   const w = Math.abs(Math.cos(t * 3.5)) * 4.6 + 0.8;
@@ -610,9 +653,11 @@ export function drawApple(ctx, cx, cy, t) {
   ellipse(ctx, cx + 2.8, cy - 6.5, 2.6, 1.3, -0.4); ctx.fill();
 }
 
+// ご当地の1UP（場所ごとに見た目がかわる）
+const HEART_ART = ['nikuman', 'pudding', 'akashiyaki'];
 export function drawHeart(ctx, cx, cy, t, size = 1, kind = 'heart') {
   const s = size * (1 + Math.sin(t * 8) * 0.05);
-  if (Art.draw(ctx, kind === 'nikuman' ? 'nikuman' : 'heart', cx, cy, false, s, s)) return;
+  if (Art.draw(ctx, HEART_ART.includes(kind) ? kind : 'heart', cx, cy, false, s, s)) return;
   ctx.save();
   ctx.translate(cx, cy);
   ctx.scale(s, s);

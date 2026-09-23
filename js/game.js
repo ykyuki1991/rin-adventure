@@ -1,6 +1,6 @@
 // ゲームの進行（1ステージ分）
 import { Art } from './art.js';
-import { TILE, T, PHYS, STAR_TIME } from './config.js';
+import { TILE, T, PHYS, STAR_TIME, BOOTS_TIME } from './config.js';
 import { Level } from './level.js';
 import { LEVELS } from './levels.js';
 import { Player } from './player.js';
@@ -220,7 +220,7 @@ export class Game {
     for (const e of this.entities) {
       if (e.remove) continue;
       if (e.isEnemy) {
-        if (!e.awake || e.dead) continue;
+        if (!e.awake || e.dead || e.hidden) continue;
         if (e.kind === 'boss' && e.hurtT > 0) continue;
         if (!boxOverlap(hb, e)) continue;
         // スター中は体当たりでたおせる
@@ -274,6 +274,12 @@ export class Game {
       this.sparkle(p.cx, p.y + 6, 10);
     } else if (e.kind === 'heart') {
       this.oneUp(e.cx, e.y);
+    } else if (e.kind === 'boots') {
+      p.boots = BOOTS_TIME; p.airJumps = 1;
+      this.sfx('power');
+      this.addScore(1000, e.cx, e.y);
+      this.sparkle(p.cx, p.y + 12, 10);
+      this.popup('ジャンプぐつ！', p.cx, p.y - 8);
     } else if (e.kind === 'star') {
       p.star = STAR_TIME;
       this.sfx('power');
@@ -293,7 +299,7 @@ export class Game {
     this.state = 'dying';
     this.stateT = 0;
     this.fellDeath = fell;
-    p.pose = 'dead'; p.vx = 0; p.vy = 0; p.powered = false; p.star = 0; p.inv = 0;
+    p.pose = 'dead'; p.vx = 0; p.vy = 0; p.powered = false; p.star = 0; p.inv = 0; p.boots = 0;
     p.deathJump = false;
     this.session.powered = false;
     this.app.sound.stopBgm();
@@ -364,7 +370,7 @@ export class Game {
     for (const e of this.entities) {
       const over = e.x < x1 && e.x + e.w > x0 && Math.abs(e.bottom - top) < 3;
       if (!over) continue;
-      if (e.isEnemy && e.awake && !e.dead) {
+      if (e.isEnemy && e.awake && !e.dead && !e.hidden) {
         if (e.kill(this, e.cx < x0 + 8 ? -1 : 1)) { this.addScore(e.score, e.cx, e.y); this.sfx('kick'); }
       } else if (e.isItem && !e.behind) {
         e.vy = -260;
@@ -384,6 +390,7 @@ export class Game {
       case 'power': this.entities.push(new PowerItem('apple', tx, ty)); this.sfx('sprout'); break;
       case 'heart': this.entities.push(new PowerItem('heart', tx, ty)); this.sfx('sprout'); break;
       case 'star': this.entities.push(new PowerItem('star', tx, ty)); this.sfx('sprout'); break;
+      case 'boots': this.entities.push(new PowerItem('boots', tx, ty)); this.sfx('sprout'); break;
     }
   }
 
@@ -429,9 +436,9 @@ export class Game {
       this.particles.push({ type: 'spark', x, y, vx: rand(-70, 70), vy: rand(-90, 20), life: 0.5, max: 0.5, hue: 48 });
     }
   }
-  splash(x, y) {
-    this.sfx('splash');
-    for (let i = 0; i < 12; i++) {
+  splash(x, y, quiet = false) {
+    if (!quiet) this.sfx('splash');
+    for (let i = 0; i < (quiet ? 7 : 12); i++) {
       this.particles.push({ type: 'drop', x: x + rand(-6, 6), y, vx: rand(-60, 60), vy: rand(-220, -80), life: 0.7, max: 0.7 });
     }
   }

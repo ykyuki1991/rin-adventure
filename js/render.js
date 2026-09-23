@@ -389,6 +389,12 @@ export class Renderer {
       case 'crab': return S.drawCrab(ctx, e, P, time);
       case 'rock': return S.drawRock(ctx, e, P, time);
       case 'boss': return S.drawBoss(ctx, e, P, time);
+      case 'boar': return S.drawBoar(ctx, e, P, time);
+      case 'penguin': return S.drawPenguin(ctx, e, P, time);
+      case 'jelly': return S.drawJelly(ctx, e, P, time);
+      case 'lantern': return S.drawLantern(ctx, e, P, time);
+      case 'tako': return S.drawTako(ctx, e, P, time);
+      case 'boots': return S.drawBoots(ctx, e.cx, e.y + 7, e.t);
       case 'popcoin': return S.drawCoin(ctx, e.cx, e.y + 7, e.t * 3);
       case 'apple': return S.drawApple(ctx, e.cx, e.y + 7, e.t);
       case 'heart': return S.drawHeart(ctx, e.cx, e.y + 7, e.t, 1, P.heart);
@@ -444,6 +450,17 @@ export class Renderer {
     text('×' + String(s.coins).padStart(2, '0'), L + 52, y);
     // スコア
     text(String(s.score).padStart(7, '0'), L + 84, y);
+    // ジャンプぐつ（のこり時間のゲージ）
+    const pb = game.player && game.player.boots;
+    if (pb > 0) {
+      const gx = L + 5, gy = y + 16;
+      ctx.save(); ctx.translate(gx, gy); ctx.scale(0.62, 0.62);
+      if (pb < 3 && Math.floor(game.time * 8) % 2) ctx.globalAlpha = 0.4;
+      S.drawBoots(ctx, 0, 0, 0);
+      ctx.restore();
+      ctx.fillStyle = 'rgba(20,20,40,0.6)'; ctx.fillRect(gx + 8, gy - 2, 34, 4);
+      ctx.fillStyle = '#9ad7ff'; ctx.fillRect(gx + 8.5, gy - 1.5, 33 * Math.min(1, pb / 20), 3);
+    }
     // メダル
     const mc = game.def.medalCount;
     const saved = app.save.medals[game.def.id] || [];

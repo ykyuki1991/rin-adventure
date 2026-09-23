@@ -450,3 +450,6 @@ tile('spike', () => [
   rect(0, 130, U, 30, '#6c7686'), rect(0, 130, U, 6, '#9aa4b2'),
   ...[0, 1, 2].map(i => { const x = i * 53.3; return poly([[x + 3, 130], [x + 26.7, 50], [x + 50, 130]], '#c9d0d8') + poly([[x + 12, 130], [x + 26.7, 56], [x + 26.7, 130]], '#f4f7fa'); })
 ].join(''));
+
+// ほかのファイル（tiles2.mjs）でも使う道具
+export { U, tile, masonry, joints, SLOPES, slopeTile, brickWall, water, WIN };

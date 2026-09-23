@@ -449,3 +449,6 @@ bgLayer('harborland', { f: 0.38, w: 900, y: 120, h: 120 }, (defs, w) => {
   out.push(rect(0, 212, w, 28, '#1f1c30'));
   return tr(0, -120, out.join(''));
 });
+
+// ほかのファイル（bgs2.mjs）でも使う道具
+export { wrap, ridgePath, ridgeY, cloud, canopy, farCity, house, apartment, building, tree, cypress, anchor, radioTower, portTowerFar, museum, bridge, ijinkan, cloudLayer, fgBushes, SKYCLOUD };

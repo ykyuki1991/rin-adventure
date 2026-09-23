@@ -8,10 +8,14 @@ import { SPRITES, BACKGROUNDS } from './registry.mjs';
 
 import './chars.mjs';
 import './enemies.mjs';
+import './enemies2.mjs';
 import './items.mjs';
 import './tiles.mjs';
+import './tiles2.mjs';
 import './decos.mjs';
+import './decos2.mjs';
 import './bgs.mjs';
+import './bgs2.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const OUT = join(ROOT, 'art');

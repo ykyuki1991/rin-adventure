@@ -1,5 +1,5 @@
 // 敵・アイテム・しかけ
-import { TILE } from './config.js';
+import { TILE, T } from './config.js';
 import { moveBody, isGroundAt } from './physics.js';
 
 const G = 1800;
@@ -278,6 +278,169 @@ export class Boss extends Enemy {
   }
 }
 
+// 敵が足場のはしにいるか（落ちないように引き返すときに使う）
+function atEdge(e, game) {
+  const aheadX = e.dir > 0 ? e.x + e.w + 1 : e.x - 1;
+  return !isGroundAt(game.level, Math.floor(aheadX / TILE), Math.floor((e.y + e.h + 2) / TILE));
+}
+
+// イノシシ（六甲山にすむ）：ふだんはのしのし歩き、りんが近くにくると前足でけって突進する。ふめる
+export class Boar extends Enemy {
+  constructor(tx, ty) {
+    super('boar', tx, ty, 16, 12);
+    this.walker = true; this.score = 300;
+    this.state = 'walk'; this.stateT = 0;
+  }
+  update(game, dt) {
+    this.t += dt;
+    if (this.dead) return this.updateDead(game, dt);
+    this.stateT += dt;
+    const p = game.player;
+    const dx = p.cx - this.cx, dy = Math.abs((p.y + p.h) - (this.y + this.h));
+    let speed = 0;
+    switch (this.state) {
+      case 'walk':
+        speed = 22;
+        if (this.stateT > 0.8 && Math.abs(dx) < 96 && dy < 28) { this.dir = dx > 0 ? 1 : -1; this.state = 'ready'; this.stateT = 0; }
+        break;
+      case 'ready': // 前足で地面をけって、じゅんび
+        speed = 0;
+        if (this.stateT > 0.55) { this.state = 'charge'; this.stateT = 0; }
+        break;
+      case 'charge':
+        speed = 125;
+        if (this.grounded && Math.random() < dt * 14) game.dust(this.cx - this.dir * 8, this.y + this.h, 1);
+        if (this.stateT > 1.4) { this.state = 'rest'; this.stateT = 0; }
+        break;
+      case 'rest': // ハァハァ ひとやすみ
+        speed = 0;
+        if (this.stateT > 0.9) { this.state = 'walk'; this.stateT = 0; }
+        break;
+    }
+    this.vx = this.dir * speed;
+    this.vy = Math.min(this.vy + G * dt, 480);
+    const r = moveBody(this, game.level, dt);
+    this.grounded = r.ground;
+    if (r.wallL || r.wallR) {
+      this.dir = r.wallL ? 1 : -1;
+      if (this.state === 'charge') { this.state = 'rest'; this.stateT = 0; }
+    }
+    if (r.ground && atEdge(this, game)) {
+      if (this.state === 'charge') { this.state = 'rest'; this.stateT = 0; this.x -= this.vx * dt; }
+      this.dir *= -1;
+    }
+    this.fallCheck(game);
+  }
+}
+
+// ペンギン（動物園）：よちよち歩いて、ときどきおなかで すーっとすべってくる。ふめる
+export class Penguin extends Enemy {
+  constructor(tx, ty) {
+    super('penguin', tx, ty, 12, 15);
+    this.walker = true; this.score = 200;
+    this.slideT = 0; this.nextSlide = 1.2 + (tx % 4) * 0.4;
+  }
+  setSlide(on) {
+    if (on && this.h === 15) { this.h = 10; this.y += 5; }
+    if (!on && this.h === 10) { this.h = 15; this.y -= 5; }
+  }
+  update(game, dt) {
+    this.t += dt;
+    if (this.dead) return this.updateDead(game, dt);
+    if (this.slideT > 0) {
+      this.slideT -= dt;
+      this.vx = this.dir * 92;
+      if (this.slideT <= 0) this.setSlide(false);
+    } else {
+      this.vx = this.dir * 16;
+      this.nextSlide -= dt;
+      if (this.nextSlide <= 0 && this.grounded) { this.slideT = 0.9; this.nextSlide = 2.4; this.setSlide(true); }
+    }
+    this.vy = Math.min(this.vy + G * dt, 480);
+    const r = moveBody(this, game.level, dt);
+    if (r.wallL) this.dir = 1; else if (r.wallR) this.dir = -1;
+    this.grounded = r.ground;
+    if (r.ground && atEdge(this, game)) this.dir *= -1;
+    this.fallCheck(game);
+  }
+}
+
+// クラゲ（海）：その場でふわふわ上下する。さすので ふめない
+export class Jelly extends Enemy {
+  constructor(tx, ty, range = 2) {
+    super('jelly', tx, ty, 12, 14);
+    this.x0 = this.x; this.y0 = this.y;
+    this.range = range * TILE / 2;
+    this.phase = (tx * 0.9) % (Math.PI * 2);
+    this.stompable = false; this.score = 200;
+  }
+  stomp() { return false; }
+  update(game, dt) {
+    this.t += dt;
+    if (this.dead) return this.updateDead(game, dt);
+    const py = this.y;
+    this.y = this.y0 - this.range + Math.sin(this.t * 1.5 + this.phase) * this.range;
+    this.x = this.x0 + Math.sin(this.t * 0.6 + this.phase) * 4;
+    this.rising = this.y < py;
+  }
+}
+
+// ちょうちんおばけ（南京町）：ふわふわうかんで、りんのほうへ ゆっくり近づいてくる。ふめる
+export class Lantern extends Enemy {
+  constructor(tx, ty) {
+    super('lantern', tx, ty, 12, 14);
+    this.x0 = this.x; this.y0 = this.y;
+    this.phase = (tx * 1.3) % (Math.PI * 2);
+    this.score = 200;
+  }
+  stomp() { this.dead = true; this.flipped = true; this.vy = 0; this.vx = 0; return true; }
+  update(game, dt) {
+    this.t += dt;
+    if (this.dead) return this.updateDead(game, dt);
+    const dx = game.player.cx - this.cx;
+    if (Math.abs(dx) < 150) this.vx += Math.sign(dx) * 40 * dt; else this.vx *= 0.97;
+    this.vx = Math.max(-24, Math.min(24, this.vx));
+    this.x = Math.max(this.x0 - 80, Math.min(this.x0 + 80, this.x + this.vx * dt));
+    this.y = this.y0 + Math.sin(this.t * 2 + this.phase) * 7;
+    this.dir = dx > 0 ? 1 : -1;
+  }
+}
+
+// タコ（明石の海）：水の中から ぴょーんと とび出してくる。ふめる
+export class Tako extends Enemy {
+  constructor(tx, ty, height = 6) {
+    super('tako', tx, ty, 14, 14);
+    this.y0 = this.y;
+    this.g = 900;
+    this.jumpV = Math.sqrt(2 * this.g * height * TILE);
+    this.wait = 0.6 + (tx % 3) * 0.5;
+    this.hidden = true; this.score = 200;
+  }
+  stomp() { this.dead = true; this.flipped = true; this.vy = 0; this.vx = 0; return true; }
+  update(game, dt) {
+    this.t += dt;
+    if (this.dead) return this.updateDead(game, dt);
+    if (this.surf === undefined) {
+      // 水面の高さ（しぶきを出す場所）
+      const tx = Math.floor(this.cx / TILE);
+      let ty = Math.floor((this.y0 + this.h - 1) / TILE);
+      while (ty > 0 && game.level.get(tx, ty - 1) === T.WATER) ty--;
+      this.surf = ty * TILE + 5;
+    }
+    if (this.hidden) {
+      this.wait -= dt;
+      if (this.wait <= 0) { this.hidden = false; this.vy = -this.jumpV; game.splash(this.cx, this.surf, true); }
+      return;
+    }
+    this.vy += this.g * dt;
+    this.y += this.vy * dt;
+    if (this.vy > 0 && this.y >= this.y0) {
+      this.y = this.y0; this.vy = 0; this.hidden = true; this.wait = 1.5;
+      game.splash(this.cx, this.surf, true);
+    }
+  }
+}
+
 export function makeEnemy(s) {
   switch (s.type) {
     case 'slime': return new Slime(s.x, s.y);
@@ -287,6 +450,11 @@ export function makeEnemy(s) {
     case 'crab': return new Crab(s.x, s.y);
     case 'rock': return new Rock(s.x, s.y);
     case 'boss': return new Boss(s.x, s.y);
+    case 'boar': return new Boar(s.x, s.y);
+    case 'penguin': return new Penguin(s.x, s.y);
+    case 'jelly': return new Jelly(s.x, s.y, s.range);
+    case 'lantern': return new Lantern(s.x, s.y);
+    case 'tako': return new Tako(s.x, s.y, s.height);
   }
   return null;
 }

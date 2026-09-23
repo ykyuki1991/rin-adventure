@@ -125,6 +125,124 @@ function drawDecoArt(ctx, d, x, y, time, night) {
       for (let i = 0; i < (d.w || 1); i++) Art.draw(ctx, 'deco/beam', x + i * TILE, y);
       return true;
     }
+    // ---- 動物園 ----
+    case 'zooGate':
+      if (!Art.draw(ctx, 'deco/zooGate', x, y)) return false;
+      text(ctx, '王子動物園', x + 56, y - 63, 11, '#2d6a1f');
+      text(ctx, 'おうじどうぶつえん', x + 56, y - 55.2, 4.4, '#2d6a1f', null, 'normal');
+      return true;
+    case 'sakura': { const k = (d.s || 1.5) / 1.2; return Art.draw(ctx, 'deco/sakura', x + 8, y, false, k, k); }
+    case 'elephant': return Art.draw(ctx, 'deco/elephant', x, y);
+    case 'flamingo': return Art.draw(ctx, 'deco/flamingo', x + 8, y, x % 32 < 16);
+    // ---- 新神戸・ロープウェイ ----
+    case 'shinkansen': {
+      if (!Art.has('deco/shinNose')) return false;
+      const len = (d.w || 12) * TILE;
+      for (let px = x; px < x + len - 80; px += 64) Art.draw(ctx, 'deco/shinCar', px, y);
+      Art.draw(ctx, 'deco/shinNose', x + len - 80, y);
+      return true;
+    }
+    case 'ropewayStation':
+      if (!Art.draw(ctx, 'deco/ropewayStation', x, y)) return false;
+      if (d.text) text(ctx, d.text, x + 48, y - 79.5, 7.5, '#1f4f7a');
+      return true;
+    case 'cable': {
+      const x1 = d.x + 8, y1 = d.y - 34, x2 = d.x2 * TILE + 8, y2 = d.y2 * TILE - 34;
+      ctx.lineCap = 'round';
+      for (const [dy, c, w] of [[0, '#2f3640', 1.4], [-3.5, '#2f3640', 1.2], [-0.4, '#8a95a5', 0.5]]) {
+        ctx.strokeStyle = night ? '#6b7482' : c; ctx.lineWidth = w;
+        ctx.beginPath(); ctx.moveTo(x1, y1 + dy); ctx.lineTo(x2, y2 + dy); ctx.stroke();
+      }
+      return true;
+    }
+    // ---- 南京町 ----
+    case 'gate': {
+      if (!Art.has('deco/gateRoof')) return false;
+      const w = (d.w || 8) * TILE, k = w / 128;
+      for (const px of [x + 6, x + w - 14]) {
+        const g = ctx.createLinearGradient(px, 0, px + 8, 0);
+        g.addColorStop(0, '#ef5350'); g.addColorStop(0.5, '#c62828'); g.addColorStop(1, '#8e1b1b');
+        ctx.fillStyle = g; ctx.fillRect(px, y + 30, 8, 240);
+        ctx.fillStyle = '#ffd54f'; ctx.fillRect(px - 1, y + 34, 10, 2);
+      }
+      Art.draw(ctx, 'deco/gateRoof', x, y, false, k, 1);
+      text(ctx, d.text || '長安門', x + w / 2, y + 22.6, 8.5, '#b71c1c');
+      return true;
+    }
+    case 'lanterns': {
+      if (!Art.has('deco/lantern')) return false;
+      const w = (d.w || 8) * TILE;
+      ctx.strokeStyle = '#3b2a1a'; ctx.lineWidth = 0.7;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + w / 2, y + 16, x + w, y); ctx.stroke();
+      const n = Math.max(3, Math.floor(w / 18));
+      for (let i = 1; i < n; i++) {
+        const u = i / n, lx = x + w * u, ly = y + 8 * 4 * u * (1 - u);
+        if (night) {
+          const g = ctx.createRadialGradient(lx, ly + 6, 1, lx, ly + 6, 10);
+          g.addColorStop(0, 'rgba(255,150,90,0.45)'); g.addColorStop(1, 'rgba(255,150,90,0)');
+          ctx.fillStyle = g; ctx.fillRect(lx - 10, ly - 4, 20, 20);
+        }
+        Art.draw(ctx, 'deco/lantern', lx, ly);
+      }
+      return true;
+    }
+    case 'stall':
+      if (!Art.draw(ctx, 'deco/stall', x, y)) return false;
+      text(ctx, d.text || '豚まん', x + 32, y - 40.5, 8, '#ffe082');
+      return true;
+    // ---- 須磨 ----
+    case 'hut':
+      if (!Art.draw(ctx, 'deco/hut', x, y)) return false;
+      text(ctx, d.text || '海の家', x + 48, y - 55.5, 8, '#1d6f86');
+      return true;
+    case 'parasol': {
+      if (!Art.has('deco/parasol0')) return false;
+      const cx = x + 16, gy = d.base * TILE;
+      ctx.fillStyle = '#d9dde3'; ctx.fillRect(cx - 1, y, 2, gy - y);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(cx - 1, y, 0.8, gy - y);
+      Art.draw(ctx, 'deco/parasol' + ((d.color || 0) % 4), x, y);
+      return true;
+    }
+    case 'sandcastle': return Art.draw(ctx, 'deco/sandcastle', x, y);
+    case 'pine': { const k = (d.s || 1.3) / 1.3; return Art.draw(ctx, 'deco/pine', x + 8, y, false, k, k); }
+    // ---- 舞子・橋 ----
+    case 'ijokaku': return Art.draw(ctx, 'deco/ijokaku', x, y);
+    case 'towerTop': return Art.draw(ctx, 'deco/towerTop', x, y);
+    case 'hangers': {
+      ctx.lineWidth = 0.9;
+      for (const [px, top, bottom] of d.lines) {
+        ctx.strokeStyle = 'rgba(120,140,135,0.9)'; ctx.beginPath(); ctx.moveTo(px + 0.4, top); ctx.lineTo(px + 0.4, bottom); ctx.stroke();
+        ctx.strokeStyle = 'rgba(235,245,242,0.95)'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(px - 0.2, top); ctx.lineTo(px - 0.2, bottom); ctx.stroke();
+        ctx.lineWidth = 0.9;
+      }
+      return true;
+    }
+    // ---- 六甲山・掬星台 ----
+    case 'sheep': {
+      const bob = Math.abs(Math.sin((time + x * 0.1) * 2)) * 0.8;
+      return Art.draw(ctx, 'deco/sheep', x + 8, y - bob, x % 48 < 16);
+    }
+    case 'track': {
+      const x1 = d.x, y1 = d.y, x2 = d.x2 * TILE, y2 = d.y2 * TILE;
+      const n = Math.floor(Math.hypot(x2 - x1, y2 - y1) / 7);
+      ctx.strokeStyle = night ? '#5a4a3a' : '#8d6e63'; ctx.lineWidth = 1.6;
+      for (let i = 0; i <= n; i++) { const u = i / n, px = x1 + (x2 - x1) * u, py = y1 + (y2 - y1) * u; ctx.beginPath(); ctx.moveTo(px - 1.5, py + 1); ctx.lineTo(px + 1.5, py + 7.5); ctx.stroke(); }
+      for (const [dy, c] of [[2, '#8a93a6'], [6, '#8a93a6']]) {
+        ctx.strokeStyle = c; ctx.lineWidth = 1.1;
+        ctx.beginPath(); ctx.moveTo(x1, y1 + dy); ctx.lineTo(x2, y2 + dy); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 0.4;
+        ctx.beginPath(); ctx.moveTo(x1, y1 + dy - 0.4); ctx.lineTo(x2, y2 + dy - 0.4); ctx.stroke();
+      }
+      return true;
+    }
+    case 'monument': {
+      if (!Art.has('deco/monument')) return false;
+      const a = 0.5 + Math.sin(time * 3) * 0.2;
+      const g = ctx.createRadialGradient(x + 8, y - 33, 1, x + 8, y - 33, 22);
+      g.addColorStop(0, `rgba(255,230,120,${a})`); g.addColorStop(1, 'rgba(255,230,120,0)');
+      ctx.fillStyle = g; ctx.fillRect(x - 14, y - 55, 44, 44);
+      return Art.draw(ctx, 'deco/monument', x + 8, y);
+    }
     case 'crane': {
       if (!Art.draw(ctx, 'deco/crane', x, y)) return false;
       // 動くつり具とコンテナ
@@ -537,6 +655,29 @@ export function drawPlatformLook(ctx, pf, theme, time, night) {
   if (Art.ready) {
     if (pf.look === 'train' && Art.draw(ctx, 'pf/train', x, y, false, w / 80, 1)) return;
     if (pf.look === 'ship' && Art.draw(ctx, 'pf/ship', x, y, false, w / 96, 1)) return;
+    if (pf.look === 'portliner' && Art.draw(ctx, 'pf/portliner', x, y, false, w / 80, 1)) return;
+    if (pf.look === 'gondola' && Art.draw(ctx, night ? 'pf/rgondolaL' : 'pf/rgondola', x, y, false, w / 32, 1)) return;
+    if (pf.look === 'cablecar' && Art.draw(ctx, 'pf/cablecar', x, y, false, w / 48, 1)) return;
+    if (pf.look === 'lotus' && Art.draw(ctx, 'pf/lotus', x, y, false, w / 32, 1)) return;
+    if (pf.look === 'log' && Art.draw(ctx, 'pf/log', x, y, false, w / 32, 1)) return;
+    if (pf.look === 'ring' && Art.draw(ctx, 'pf/ring' + ((pf.color || 0) % 4), x, y, false, w / 32, 1)) return;
+    if (pf.look === 'orca' && Art.has('pf/orca')) {
+      ctx.save(); ctx.translate(x + w / 2, y + 6);
+      ctx.rotate(Math.atan2(pf.vyNow || 0, 120 * (pf.facing || 1)) * 0.6);
+      Art.draw(ctx, 'pf/orca', 0, 0, (pf.facing || 1) < 0, w / 48, 1);
+      ctx.restore();
+      return;
+    }
+    if (pf.look === 'giraffe' && Art.has('pf/giraffeHead')) {
+      const gy = (pf.base ?? 13) * TILE, cx = x + w / 2;
+      Art.draw(ctx, 'pf/giraffeBody', cx, gy);
+      const neckBottom = gy - 30;
+      ctx.save(); ctx.beginPath(); ctx.rect(cx - 8, y + 4, 16, Math.max(0, neckBottom - y - 4)); ctx.clip();
+      for (let yy = y + 4; yy < neckBottom; yy += 16) Art.draw(ctx, 'pf/giraffeNeck', cx, yy);
+      ctx.restore();
+      Art.draw(ctx, 'pf/giraffeHead', x, y, false, w / 32, 1);
+      return;
+    }
     if (pf.look === 'wheel' && Art.has('pf/gondola0')) {
       ctx.strokeStyle = night ? '#cfd6ff' : '#b9c0cc'; ctx.lineWidth = 1.2;
       ctx.beginPath(); ctx.moveTo(pf.ax, pf.ay); ctx.lineTo(pf.ax, pf.y - 20); ctx.stroke();
@@ -713,20 +854,33 @@ function drawCloudPf(ctx, x, y, w) {
 export function drawZone(ctx, z, time, camX, viewW) {
   if (z.x > camX + viewW + 40 || z.x + z.w < camX - 40) return;
   if (z.kind === 'fall') {
-    const g = ctx.createLinearGradient(z.x, 0, z.x + z.w, 0);
-    g.addColorStop(0, 'rgba(220,245,255,0.55)'); g.addColorStop(0.5, 'rgba(255,255,255,0.8)'); g.addColorStop(1, 'rgba(200,235,250,0.55)');
-    ctx.fillStyle = g; ctx.fillRect(z.x, z.y, z.w, z.h);
-    ctx.fillStyle = 'rgba(160,215,240,0.8)';
-    for (let i = 0; i < z.w / 3; i++) {
-      const sx = z.x + 1 + i * 3 + (i % 2);
-      const off = ((time * 260 + i * 37) % 40);
-      for (let yy = z.y - 40 + off; yy < z.y + z.h; yy += 40) ctx.fillRect(sx, Math.max(z.y, yy), 1, Math.min(14, z.y + z.h - yy));
+    // 水の帯（まん中が明るい）
+    const g = ctx.createLinearGradient(z.x - 1, 0, z.x + z.w + 1, 0);
+    g.addColorStop(0, 'rgba(150,212,238,0.8)'); g.addColorStop(0.35, 'rgba(236,250,255,0.93)');
+    g.addColorStop(0.7, 'rgba(214,242,252,0.9)'); g.addColorStop(1, 'rgba(140,204,232,0.8)');
+    ctx.fillStyle = g; ctx.fillRect(z.x - 1, z.y, z.w + 2, z.h);
+    // 下へ流れるすじ（2種類の速さ）
+    for (const [col, sp, len, step] of [['rgba(110,188,226,0.55)', 300, 16, 2.4], ['rgba(255,255,255,0.85)', 380, 10, 3.6]]) {
+      ctx.fillStyle = col;
+      for (let i = 0; i * step < z.w; i++) {
+        const sx = z.x + i * step + (i % 2) * 0.7;
+        const off = (time * sp + i * 53) % 44;
+        for (let yy = z.y - 44 + off; yy < z.y + z.h; yy += 44) {
+          const y0 = Math.max(z.y, yy), h = Math.min(len, z.y + z.h - y0);
+          if (h > 0) ctx.fillRect(sx, y0, 0.8, h);
+        }
+      }
     }
-    // しぶき
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    for (let i = 0; i < 6; i++) {
-      const a = time * 6 + i;
-      circle(ctx, z.x + z.w / 2 + Math.sin(a * 1.7) * z.w * 0.7, z.y + z.h - 2 - Math.abs(Math.sin(a)) * 6, 2.5 + (i % 2)); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillRect(z.x - 1, z.y, 0.8, z.h); ctx.fillRect(z.x + z.w + 0.2, z.y, 0.8, z.h);
+    // 滝つぼのもやとしぶき
+    const bx = z.x + z.w / 2, by = z.y + z.h;
+    const mg = ctx.createRadialGradient(bx, by, 2, bx, by, z.w + 16);
+    mg.addColorStop(0, 'rgba(255,255,255,0.55)'); mg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = mg; ctx.fillRect(bx - z.w - 16, by - z.w - 16, (z.w + 16) * 2, z.w + 16);
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    for (let i = 0; i < 9; i++) {
+      const a = time * 5 + i * 1.7;
+      circle(ctx, bx + Math.sin(a * 1.3 + i) * (z.w / 2 + 5), by - 2 - Math.abs(Math.sin(a)) * 8, 1.8 + (i % 3) * 0.8); ctx.fill();
     }
   } else if (z.kind === 'spray') {
     ctx.fillStyle = 'rgba(160,220,255,0.35)'; ctx.fillRect(z.x + 2, z.y, z.w - 4, z.h);

@@ -61,7 +61,7 @@ function stage1() {
   b.ground(161, 204, 8);
   b.row(167, 4, 'B?B');
   b.row(172, 7, 'ooooo');
-  b.enemy('slime', 170, 7).enemy('slime', 175, 7).enemy('bird', 178, 3).enemy('spiky', 182, 7);
+  b.enemy('slime', 170, 7).enemy('boar', 175, 7).enemy('bird', 178, 3).enemy('spiky', 182, 7);
   b.goal(190, 8);
   return b.build();
 }
@@ -73,8 +73,8 @@ function stage2() {
   b.deco('zooGate', 2, 13);
   b.start(11);
   b.deco('sakura', 14, 13).deco('sakura', 22, 13).deco('sakura', 30, 13);
-  b.row(16, 9, '?B?');
-  b.enemy('slime', 24).enemy('slime', 28);
+  b.row(16, 9, '?BJ');                  // ジャンプぐつ
+  b.enemy('slime', 24).enemy('penguin', 28);
   // キリンの頭に乗って高いところへ
   b.sign(33, 'キリン', '', 13, 'board');
   b.platform(37, 11, { move: 'v', range: -5, speed: 0.4, width: 2, look: 'giraffe', base: 13, phase: 0.5 });
@@ -82,7 +82,7 @@ function stage2() {
   b.medal(39, 2);                       // メダル1：キリンの頭からジャンプ
   b.ground(46, 70, 7);
   b.row(55, 3, '?P?');
-  b.enemy('slime', 50, 6).enemy('slime', 60, 6).enemy('spiky', 66, 6);
+  b.enemy('penguin', 50, 6).enemy('slime', 60, 6).enemy('spiky', 66, 6);
   b.rampDown(71, 7, 6, true);
   b.ground(83, 108);
   // ゾウのシャワーで生け垣をこえる
@@ -105,7 +105,8 @@ function stage2() {
   b.wheel(142, 6, 4.5, 6, 0.35, { base: 13 });
   b.medal(142, 6);                      // メダル3：観覧車のまん中
   b.mat('hedge', () => b.rect(148, 2, 149, 12, 'X'));
-  b.enemy('slime', 155).enemy('spiky', 162).enemy('slime', 168).enemy('bird', 172, 7).enemy('slime', 178);
+  b.sign(152, 'ペンギン', '', 13, 'board');
+  b.enemy('penguin', 156).enemy('spiky', 162).enemy('penguin', 168).enemy('bird', 172, 7).enemy('slime', 178);
   b.row(165, 9, 'B?B?B');
   b.deco('sakura', 184, 13);
   b.goal(195);
@@ -170,7 +171,8 @@ function stage3() {
   b.enemy('frog', 118, 11);
   b.rampUp(125, 12, 3);
   b.ground(128, 146, 9);
-  b.enemy('slime', 132, 8).enemy('bird', 138, 4);
+  b.sign(129, 'イノシシ注意', 'いのししちゅうい', 9, 'wood');
+  b.enemy('boar', 134, 8).enemy('bird', 138, 4);
   // 雄滝（いちばん大きな滝。丸太に乗って下をくぐる）
   b.sign(144, '雄滝', 'おんたき', 9, 'wood');
   b.water(147, 154, 11);
@@ -182,7 +184,7 @@ function stage3() {
   b.rampUp(165, 9, 3);
   b.ground(168, 214, 6);
   b.row(176, 2, '?S?');
-  b.enemy('slime', 174, 5).enemy('spiky', 181, 5).enemy('slime', 188, 5).enemy('bird', 192, 2);
+  b.enemy('slime', 174, 5).enemy('spiky', 181, 5).enemy('boar', 190, 5).enemy('bird', 192, 2);
   b.deco('tree', 170, 6).deco('tree', 196, 6);
   b.goal(200, 6);
   return b.build();
@@ -216,7 +218,7 @@ function stage4() {
   b.ground(122, 219, 7);
   b.sign(128, 'ハーブ園', 'はーぶえん', 7, 'board');
   b.row(135, 3, '?P?');
-  b.enemy('slime', 139, 6).enemy('bird', 144, 3);
+  b.enemy('boar', 140, 6).enemy('bird', 144, 3);
   // 温室（左のかべはすり抜けられる）
   b.walls(150, 157, 3, 6, 'glass');
   b.rect(151, 4, 156, 6, '_');
@@ -226,7 +228,7 @@ function stage4() {
   b.enemy('spiky', 162, 6);
   b.rampUp(168, 7, 2, true);
   b.ground(172, 183, 5);
-  b.enemy('slime', 176, 4).enemy('slime', 180, 4);
+  b.enemy('slime', 176, 4).enemy('boar', 181, 4);
   b.rampDown(184, 5, 2, true);
   b.ground(188, 219, 7);
   b.enemy('spiky', 194, 6).enemy('bird', 198, 3);
@@ -240,7 +242,7 @@ function stage5() {
   b.ground(0, 30);
   b.start(9);
   b.sign(12, '北野町', 'きたのちょう', 13, 'street');
-  b.row(18, 9, '?B?');
+  b.row(18, 9, '?J?');                  // ジャンプぐつ（屋根の上へ行きやすい）
   b.enemy('slime', 24).enemy('bird', 27, 8);
   // 北野坂をのぼる
   b.sign(29, '北野坂', 'きたのざか', 13, 'board');
@@ -263,7 +265,7 @@ function stage5() {
   b.zone('wind', 62, 0, 30, 9, { period: 3, duty: 0.55, dir: 1, flip: true, power: 45 });
   b.medal(73, 1);                       // メダル2：風見鶏の館の屋根の上でジャンプ
   b.enemy('slime', 84, 8).enemy('bird', 88, 4);
-  b.row(90, 5, 'B?B');
+  b.row(90, 5, 'BLB');                  // 神戸プリン（1UP）
   b.enemy('spiky', 95, 8);
   // 坂を下る
   b.rampDown(101, 9, 4, true);
@@ -334,14 +336,14 @@ function stage6() {
   b.deco('lanterns', 130, 3, { w: 12 }).deco('lanterns', 146, 3, { w: 14 });
   b.deco('stall', 134, 13, { text: '豚まん' });
   b.row(136, 9, 'L');
-  b.enemy('slime', 140).enemy('bird', 144, 7).enemy('spiky', 150);
+  b.enemy('slime', 140).enemy('lantern', 145, 9).enemy('spiky', 150);
   b.row(152, 10, '=.=.=');
   b.row(158, 7, '=');
   b.row(161, 5, '=');
   b.row(164, 3, '=');
   b.medal(167, 1);                      // メダル3：ちょうちんをのぼった先
   b.deco('stall', 170, 13, { text: 'ごま団子' });
-  b.enemy('slime', 176).enemy('slime', 180).enemy('spiky', 186);
+  b.enemy('slime', 176).enemy('lantern', 181, 9).enemy('spiky', 186);
   b.row(182, 9, '?B?');
   b.deco('gate', 192, 7, { w: 7, text: '西安門' });
   b.row(191, 7, '---------');
@@ -384,6 +386,7 @@ function stage7() {
   b.ground(96, 230);
   b.walls(96, 101, 11, 12, 'container');
   b.enemy('crab', 90, 7).enemy('bird', 94, 4).enemy('spiky', 104);
+  b.enemy('tako', 83, 13, { height: 4 });
   b.checkpoint(108);
   // ハーバーランド（夜）
   b.theme(114, 'harborland');
@@ -396,7 +399,7 @@ function stage7() {
   b.deco('lamp', 162, 13).deco('lamp', 176, 13).deco('lamp', 190, 13);
   b.deco('bench', 168, 13);
   b.enemy('slime', 166).enemy('crab', 172).enemy('bird', 180, 6).enemy('spiky', 186).enemy('slime', 194);
-  b.row(178, 9, 'B?B?B');
+  b.row(178, 9, 'B?BLB');
   b.goal(213);
   return b.build();
 }
@@ -416,7 +419,7 @@ function stage8() {
   b.water(41, 60);
   for (const [x, i] of [[43, 0], [47, 1], [51, 2], [55, 3], [59, 0]]) b.platform(x, 12, { move: 'bob', width: 2, look: 'ring', color: i, phase: i * 0.25 });
   b.medal(52, 6);                       // メダル1：浮き輪の上で大ジャンプ
-  b.enemy('bird', 49, 7).enemy('bird', 57, 5);
+  b.enemy('bird', 49, 7).enemy('jelly', 45, 13, { range: 2 }).enemy('jelly', 53, 13, { range: 2 });
   b.ground(61, 95);
   b.deco('sandcastle', 64, 13);
   b.checkpoint(70);
@@ -439,7 +442,7 @@ function stage8() {
   b.medal(152, 1);                      // メダル3：いちばん上のパラソルからジャンプ
   b.enemy('crab', 156).enemy('crab', 162).enemy('bird', 166, 6).enemy('spiky', 175);
   b.deco('hut', 178, 13, { text: 'かき氷' });
-  b.row(186, 9, 'B?B');
+  b.row(186, 9, 'BLB');                 // 明石焼き（1UP）
   b.enemy('crab', 190);
   b.goal(205);
   return b.build();
@@ -484,8 +487,9 @@ function stage9() {
   }
   b.deco('hangers', 0, 0, { lines, wpx: 99999 });
   // 橋の上のしかけ
-  b.row(56, 6, '?B?');
+  b.row(56, 6, '?J?');                  // ジャンプぐつ（ケーブルにとび乗れる）
   b.enemy('slime', 60, 9).enemy('spiky', 70, 9).enemy('bird', 76, 6);
+  b.enemy('tako', 101, 13, { height: 7 }).enemy('tako', 179, 13, { height: 7 });
   b.zone('wind', 84, 0, 16, 10, { period: 3.2, duty: 0.5, dir: -1, power: 55 });
   b.enemy('slime', 90, 9).enemy('bird', 110, 5);
   b.checkpoint(116, 10);
@@ -497,7 +501,7 @@ function stage9() {
   b.medal(140, 12);                     // メダル3：橋の下の点検通路
   b.enemy('spiky', 135, 9).enemy('slime', 142, 9).enemy('bird', 155, 6);
   b.zone('wind', 164, 0, 16, 10, { period: 2.8, duty: 0.5, dir: -1, power: 60 });
-  b.row(190, 6, 'B?B');
+  b.row(190, 6, 'BLB');                 // 明石焼き（1UP）
   b.enemy('slime', 172, 9).enemy('spiky', 186, 9).enemy('slime', 194, 9).enemy('bird', 200, 5);
   b.goal(214, 10);
   return b.build();
@@ -513,7 +517,7 @@ function stage10() {
   b.row(18, 9, '?P?');
   b.row(23, 6, 'h');
   b.medal(23, 2);                       // メダル1：牧場のかくしブロック
-  b.enemy('slime', 30).enemy('bird', 34, 8);
+  b.enemy('boar', 31).enemy('bird', 34, 8);
   b.rampUp(36, 13, 3);
   b.ground(39, 45, 10);
   b.enemy('spiky', 42, 9);
@@ -523,7 +527,7 @@ function stage10() {
   b.sign(50, 'ケーブル下', 'けーぶるした', 13, 'wood');
   b.deco('track', 52, 12, { x2: 77, y2: 6 });
   b.platform(52, 12, { move: 'line', dx: 22, dy: -6, speed: 0.22, width: 3, look: 'cablecar' });
-  b.enemy('bird', 64, 5).enemy('slime', 66);
+  b.enemy('bird', 64, 5).enemy('boar', 68);
   b.ground(77, 99, 6);
   b.sign(79, '虹の駅', 'にじのえき', 6, 'station');
   b.medal(90, 1);                       // メダル2：虹の駅の上でジャンプ
@@ -537,7 +541,7 @@ function stage10() {
   // 星の駅 → 掬星台
   b.ground(146, 231, 8);
   b.sign(151, '星の駅', 'ほしのえき', 8, 'station');
-  b.enemy('slime', 156, 7).enemy('spiky', 160, 7);
+  b.enemy('boar', 156, 7).enemy('spiky', 160, 7);
   b.theme(163, 'kikusei');
   b.sign(165, '掬星台', 'きくせいだい', 8, 'board');
   b.deco('monument', 170, 8).deco('monument', 200, 8).deco('lamp', 176, 8).deco('lamp', 206, 8);

@@ -17,6 +17,8 @@ export class Player {
     this.powered = false;   // パワーアップ中（1回ダメージOK・レンガをこわせる）
     this.inv = 0;           // ダメージ後のむてき時間
     this.star = 0;          // スターのむてき時間
+    this.boots = 0;         // ジャンプぐつの時間（高くとべて、空中でもう1回ジャンプできる）
+    this.airJumps = 0;
     this.walkPhase = 0;
     this.pose = 'stand';
     this.riding = null;     // 乗っている動く足場
@@ -34,6 +36,7 @@ export class Player {
     this.t += dt;
     if (this.inv > 0) this.inv -= dt;
     if (this.star > 0) this.star -= dt;
+    if (this.boots > 0) this.boots -= dt;
     if (this.powerFlash > 0) this.powerFlash -= dt;
 
     const dir = (input.right ? 1 : 0) - (input.left ? 1 : 0);
@@ -74,11 +77,19 @@ export class Player {
     if (!input.jump) this.jumping = false;
     if (this.jumpBuf > 0 && this.coyote > 0) {
       const running = Math.abs(this.vx) > P.walkSpeed + 15;
-      this.vy = -(running ? P.jumpVelRun : P.jumpVel);
+      this.vy = -(running ? P.jumpVelRun : P.jumpVel) * (this.boots > 0 ? 1.1 : 1);
       this.jumpBuf = 0; this.coyote = 0;
       this.grounded = false; this.jumping = true; this.riding = null;
       this.airMax = Math.max(P.walkSpeed, Math.abs(this.vx));
+      this.airJumps = 1;
       game.sfx('jump');
+    } else if (this.jumpBuf > 0 && this.boots > 0 && this.airJumps > 0 && !this.grounded) {
+      // ジャンプぐつ：空中でもう1回ジャンプ
+      this.vy = -P.jumpVel;
+      this.jumpBuf = 0; this.airJumps--;
+      this.jumping = true; this.riding = null;
+      game.sfx('jump');
+      if (game.dust) game.dust(this.cx, this.y + this.h + 2, 5);
     }
 
     // --- 重力（滝・シャワーなどの力も足す） ---
@@ -106,6 +117,7 @@ export class Player {
 
   land() {
     this.jumping = false;
+    this.airJumps = 1;
     this.combo = 0;
     this.airMax = PHYS.walkSpeed;
   }
