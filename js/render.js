@@ -443,28 +443,38 @@ export class Renderer {
       ctx.strokeText(str, x, y);
       ctx.fillStyle = color; ctx.fillText(str, x, y);
     };
+    // 白い丸いふだ（地図の画面と同じ見た目）
+    const pill = (x, yy, w, h = 16) => {
+      ctx.fillStyle = 'rgba(28,48,84,0.22)'; S.rr(ctx, x, yy - h / 2 + 1.3, w, h, h / 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.94)'; S.rr(ctx, x, yy - h / 2, w, h, h / 2); ctx.fill();
+    };
+    const ink = (str, x, yy, color = '#3a3452') => { ctx.fillStyle = color; ctx.fillText(str, x, yy); };
+    ctx.font = `bold 9.5px ${FONT}`;
     // 残り人数
-    const y = Tp + 7;
-    if (Art.has('rin/icon')) Art.draw(ctx, 'rin/icon', L + 5, y);
+    const y = Tp + 8;
+    pill(L, y, 38);
+    if (Art.has('rin/icon')) Art.draw(ctx, 'rin/icon', L + 8.5, y);
     else {
     ctx.fillStyle = '#ffd9b5';
-    ctx.beginPath(); ctx.arc(L + 5, y, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(L + 8.5, y, 5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#4a2a14';
-    ctx.beginPath(); ctx.ellipse(L + 5, y - 1.5, 5.4, 3.8, 0, Math.PI, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#1b1b1b';
-    ctx.fillRect(L + 5.8, y + 0.2, 1, 1.6); ctx.fillRect(L + 8, y + 0.2, 1, 1.6);
+    ctx.beginPath(); ctx.ellipse(L + 8.5, y - 1.5, 5.4, 3.8, 0, Math.PI, Math.PI * 2); ctx.fill();
     }
-    text('×' + s.lives, L + 13, y);
+    ink('×' + s.lives, L + 16, y + 0.5);
     // コイン（ふえたときに少しはねる）
     if (this.lastCoins !== s.coins) { if (this.lastCoins !== undefined && s.coins > this.lastCoins) this.coinPulse = 1; this.lastCoins = s.coins; }
     const cp = (this.coinPulse || 0);
     this.coinPulse = Math.max(0, cp - 0.08);
-    ctx.save(); ctx.translate(L + 45, y); ctx.scale(1 + cp * 0.35, 1 + cp * 0.35);
+    const cx0 = L + 42;
+    pill(cx0, y, 42);
+    ctx.save(); ctx.translate(cx0 + 8.5, y); ctx.scale(0.9 + cp * 0.35, 0.9 + cp * 0.35);
     S.drawCoin(ctx, 0, 0, 0);
     ctx.restore();
-    text('×' + String(s.coins).padStart(2, '0'), L + 52, y - cp * 1.5);
+    ink('×' + String(s.coins).padStart(2, '0'), cx0 + 16, y + 0.5 - cp * 1.5);
     // スコア
-    text(String(s.score).padStart(7, '0'), L + 84, y);
+    const sx0 = cx0 + 46;
+    pill(sx0, y, 50);
+    ink(String(s.score).padStart(7, '0'), sx0 + 7, y + 0.5, '#5a5470');
     // ジャンプぐつ（のこり時間のゲージ）
     const pb = game.player && game.player.boots;
     if (pb > 0) {
@@ -480,11 +490,12 @@ export class Renderer {
     const mc = game.def.medalCount;
     const saved = app.save.medals[game.def.id] || [];
     const mx = this.viewW / 2 - (mc - 1) * 9;
+    if (mc) pill(mx - 10, y, (mc - 1) * 18 + 20);
     for (let i = 0; i < mc; i++) {
       const now = game.runMedals.has(i), before = saved.includes(i);
       ctx.save();
       ctx.translate(mx + i * 18, y);
-      ctx.scale(0.62, 0.62);
+      ctx.scale(0.6, 0.6);
       if (!now && before) ctx.globalAlpha = 0.45;
       S.drawMedal(ctx, 0, 0, now ? game.time : 0, now || before);
       ctx.restore();
@@ -518,16 +529,22 @@ export class Renderer {
       const cx = this.viewW / 2, cy = 86;
       const name = game.def.name;
       ctx.font = `bold 16px ${FONT}`;
-      const tw = Math.max(170, ctx.measureText(name).width + 40);
-      ctx.fillStyle = 'rgba(0,0,0,0.4)';
-      S.rr(ctx, cx - tw / 2, cy - 26, tw, 52, 12); ctx.fill();
-      ctx.font = `bold 9px ${FONT}`;
-      text('ステージ ' + game.def.id, cx, cy - 15, '#ffe66d');
+      const tw = Math.max(170, ctx.measureText(name).width + 44);
+      ctx.fillStyle = 'rgba(28,48,84,0.28)';
+      S.rr(ctx, cx - tw / 2, cy - 24 + 2.5, tw, 50, 14); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.96)';
+      S.rr(ctx, cx - tw / 2, cy - 24, tw, 50, 14); ctx.fill();
+      // 「ステージ 1」の札
+      ctx.font = `bold 8px ${FONT}`;
+      const lw = ctx.measureText('ステージ ' + game.def.id).width + 16;
+      ctx.fillStyle = '#2fb5ad';
+      S.rr(ctx, cx - lw / 2, cy - 31, lw, 13, 6.5); ctx.fill();
+      ctx.fillStyle = '#ffffff'; ctx.fillText('ステージ ' + game.def.id, cx, cy - 24.2);
       ctx.font = `bold 16px ${FONT}`;
-      text(name, cx, cy + 2);
+      ctx.fillStyle = '#35304a'; ctx.fillText(name, cx, cy + 1);
       if (game.def.kana) {
         ctx.font = `bold 7px ${FONT}`;
-        text(game.def.kana, cx, cy + 17, '#dfe9ff');
+        ctx.fillStyle = '#8a84a0'; ctx.fillText(game.def.kana, cx, cy + 15);
       }
       ctx.globalAlpha = 1;
       ctx.textAlign = 'left';

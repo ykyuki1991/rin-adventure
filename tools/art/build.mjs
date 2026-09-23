@@ -16,6 +16,8 @@ import './decos.mjs';
 import './decos2.mjs';
 import './bgs.mjs';
 import './bgs2.mjs';
+import './yakumo.mjs';
+import './yakumo2.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const OUT = join(ROOT, 'art');

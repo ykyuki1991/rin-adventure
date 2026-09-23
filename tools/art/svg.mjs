@@ -36,6 +36,12 @@ export class Defs {
     this.items.push(`<clipPath id="${id}">${shapeSvg}</clipPath>`);
     return `url(#${id})`;
   }
+  // ぼかし（手前の植え込みなど、ピントの外れたものに使う）
+  blur(sd) {
+    const id = this.id();
+    this.items.push(`<filter id="${id}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${sd}"/></filter>`);
+    return `url(#${id})`;
+  }
   svg() { return this.items.length ? `<defs>${this.items.join('')}</defs>` : ''; }
 }
 

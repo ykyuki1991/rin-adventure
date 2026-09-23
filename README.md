@@ -170,7 +170,7 @@ b.goal(180, 13);                              // ゴール
 
 ### 絵を直すとき
 
-1. SVG は `tools/art/` の中のプログラム（chars.mjs・enemies.mjs・enemies2.mjs・items.mjs・tiles.mjs・tiles2.mjs・decos.mjs・decos2.mjs・bgs.mjs・bgs2.mjs）から作っています
+1. SVG は `tools/art/` の中のプログラム（chars.mjs・enemies.mjs・enemies2.mjs・items.mjs・tiles.mjs・tiles2.mjs・decos.mjs・decos2.mjs・bgs.mjs・bgs2.mjs・yakumo.mjs・yakumo2.mjs）から作っています。ステージ1（八雲通・春日野道）の背景・地面は yakumo.mjs、店・アーケード・街灯・家などの飾りは yakumo2.mjs です
 2. 直したら、次のコマンドで `art/*.svg` と `js/art-data.js` を作り直す（`sw.js` のファイル一覧も自動で直ります）
 
 ```sh

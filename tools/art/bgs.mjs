@@ -206,8 +206,9 @@ function cloudLayer(theme, seed, n, c, yMax = 90) {
     return out.join('');
   });
 }
-cloudLayer('yakumo', 11, 6, SKYCLOUD);
-bgLayer('yakumo', { f: 0.06, w: 1000, y: 80, h: 160 }, (defs, w) => {
+// 八雲通の背景は yakumo.mjs で描く（完成イメージに合わせて描き直し）
+const oldLayer = () => {};
+oldLayer('yakumo', { f: 0.06, w: 1000, y: 80, h: 160 }, (defs, w) => {
   const A = [[2, 30], [5, 10], [11, 4]];
   return tr(0, -80, [
     // 六甲山（いちばん奥）
@@ -220,11 +221,11 @@ bgLayer('yakumo', { f: 0.06, w: 1000, y: 80, h: 160 }, (defs, w) => {
     canopy(w, 166, [[3, 14], [7, 5], [13, 2]], 7, { dark: '#6f9f86', base: '#7fb08f', mid: '#78a98a', light: '#a3cba8' }, { size: 5, step: 6 })
   ].join(''));
 });
-bgLayer('yakumo', { f: 0.13, w: 900, y: 130, h: 110 }, (defs, w) => tr(0, -130, [
+oldLayer('yakumo', { f: 0.13, w: 900, y: 130, h: 110 }, (defs, w) => tr(0, -130, [
   farCity(w, 200, 21, ['#dde5ee', '#d2dce8', '#e6e8ef', '#d7e0ea', '#e2dcea'], { minW: 8, varW: 18, minH: 14, varH: 34, win: '#c3d0de' }),
   rect(0, 199, w, 41, '#cfd9e3')
 ].join('')));
-bgLayer('yakumo', { f: 0.26, w: 800, y: 110, h: 130 }, (defs, w) => {
+oldLayer('yakumo', { f: 0.26, w: 800, y: 110, h: 130 }, (defs, w) => {
   const r = rng(31);
   const out = [];
   const walls = ['#f4e8d4', '#efe2cc', '#ece2d6', '#f7efe3', '#e8d8c4', '#e3e9ee'];
@@ -247,7 +248,7 @@ bgLayer('yakumo', { f: 0.26, w: 800, y: 110, h: 130 }, (defs, w) => {
   out.push(rect(0, 208, w, 32, '#9fb09a'));
   return tr(0, -110, out.join(''));
 });
-bgLayer('yakumo', { f: 0.5, w: 700, y: 96, h: 144 }, (defs, w) => {
+oldLayer('yakumo', { f: 0.5, w: 700, y: 96, h: 144 }, (defs, w) => {
   const out = [];
   // 電柱と電線
   const xs = [60, 410];
@@ -278,7 +279,6 @@ function fgBushes(theme, seed, cols, flowers) {
     return tr(0, -212, out.join(''));
   });
 }
-fgBushes('yakumo', 51, ['#3f7d3a', '#4d8f45', '#6fae5c']);
 
 // ========================================================================
 // 北野・異人館（晴れ・坂の上から港が見える）

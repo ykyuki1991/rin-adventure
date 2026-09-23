@@ -276,8 +276,9 @@ h2.pop { animation: pop 0.5s cubic-bezier(.2, 1.6, .5, 1) both; color: #ffe66d; 
   width: clamp(62px, 20vh, 92px);
   height: clamp(62px, 20vh, 92px);
   border-radius: 50%;
-  background: rgba(20, 30, 70, 0.32);
-  border: 3px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.24);
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 8px rgba(20, 40, 80, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -292,13 +293,13 @@ h2.pop { animation: pop 0.5s cubic-bezier(.2, 1.6, .5, 1) both; color: #ffe66d; 
   bottom: calc(max(12px, env(safe-area-inset-bottom)) + 10px);
   width: clamp(76px, 25vh, 112px);
   height: clamp(76px, 25vh, 112px);
-  background: rgba(230, 57, 70, 0.6);
+  background: rgba(240, 100, 122, 0.72);
   color: #fff;
   font-weight: 900;
   font-size: clamp(13px, 4.2vh, 18px);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
-#jumpBtn.pressed { background: rgba(255, 90, 95, 0.85); }
+#jumpBtn.pressed { background: rgba(255, 120, 140, 0.9); }
 
 .icon-btn {
   position: fixed;
@@ -308,16 +309,16 @@ h2.pop { animation: pop 0.5s cubic-bezier(.2, 1.6, .5, 1) both; color: #ffe66d; 
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.35);
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 2px 6px rgba(28, 48, 84, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
   cursor: pointer;
 }
-.icon-btn i { display: block; width: 5px; height: 16px; border-radius: 2px; background: #fff; }
-.icon-btn.pressed { background: rgba(255, 255, 255, 0.35); }
+.icon-btn i { display: block; width: 5px; height: 15px; border-radius: 2px; background: #3a3452; }
+.icon-btn.pressed { background: rgba(220, 240, 240, 0.95); }
 
 /* ---------- たてむき ---------- */
 #rotate {

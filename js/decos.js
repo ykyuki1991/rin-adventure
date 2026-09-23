@@ -78,9 +78,65 @@ export function drawDeco(ctx, d, theme, time, night) {
   }
 }
 
+// ステージ1の商店街の店：[看板の文字, 文字の色]
+const YSHOP = {
+  yaoya: ['やおや', '#3f8a45'], sakana: ['さかな', '#2a6aa6'], korokke: ['コロッケ', '#c0392b'], honya: ['ほんや', '#ffffff'],
+  hanaya: ['はなや', '#d85a88'], omocha: ['おもちゃ', '#e0702a'], wagashi: ['和菓子', '#fff3dc'], ocha: ['お茶', '#5a7a2a'],
+  pan: ['パン', '#fff3dc'], cafe: ['カフェ', '#ffffff']
+};
+function shopSign(ctx, kind, sx, y) {
+  const s = YSHOP[kind], fr = Art.frame('y/shop/' + kind);
+  if (!s || !fr) return;
+  text(ctx, s[0], sx + fr[3] / 2, y - (kind === 'wagashi' ? 59 : 55.5), 7, s[1]);
+}
+
 // SVGの絵がある飾り（なければ false を返して、これまでの絵で描く）
 function drawDecoArt(ctx, d, x, y, time, night) {
   switch (d.type) {
+    // 春日野道商店街（屋根の下の店・はり・たれまく・ぼんぼり）
+    case 'arcade': {
+      if (!Art.has('y/shop/pan')) return false;
+      const w = (d.w || 10) * TILE, kinds = d.shops || Object.keys(YSHOP);
+      ctx.save(); ctx.beginPath(); ctx.rect(x, y - 100, w, 104); ctx.clip();
+      for (let i = 0, sx = x; sx < x + w; i++) {
+        const k = kinds[i % kinds.length];
+        Art.draw(ctx, 'y/shop/' + k, sx, y);
+        shopSign(ctx, k, sx, y);
+        sx += Art.frame('y/shop/' + k)[3];
+      }
+      for (let gx = x; gx < x + w; gx += 32) Art.draw(ctx, 'y/girder', gx, y - 96);
+      for (let bx = x + 60, i = 0; bx < x + w - 20; bx += 96, i++) {
+        Art.draw(ctx, 'y/banner' + (i % 4), bx, y - 90, false, 0.8, 0.8);
+        Art.draw(ctx, 'y/pendant', bx + 48, y - 90);
+      }
+      ctx.restore();
+      return true;
+    }
+    case 'ygate':
+      if (!Art.draw(ctx, 'y/gate', x, y)) return false;
+      text(ctx, d.text || '春日野道商店街', x + 48, y - 135.5, 8.4, '#c8423a');
+      if (d.kana !== '') text(ctx, d.kana || 'かすがのみち しょうてんがい', x + 48, y - 126.2, 3.4, '#8a5a3a');
+      return true;
+    case 'bld':
+      if (!Art.draw(ctx, 'y/bld/' + d.shop, x, y)) return false;
+      shopSign(ctx, d.shop, x, y);
+      return true;
+    case 'ylamp': return Art.draw(ctx, 'y/lamp', x + 8, y);
+    case 'ystation': {
+      if (!Art.has('y/station0')) return false;
+      const w = (d.w || 6) * TILE;
+      for (let i = 0, px = x; px < x + w - 4; i++, px += 48) Art.draw(ctx, 'y/station' + (i % 3), px, y);
+      return true;
+    }
+    case 'house2': return Art.draw(ctx, 'y/house2', x, y, !!d.flip);
+    case 'ivy': { const k = d.s || 1; return Art.draw(ctx, 'y/ivy' + (d.v || 0), x + 8, y + 2, !!d.flip, k, k); }
+    case 'drain': return Art.draw(ctx, 'y/drain', x + 8, y + 8);
+    case 'ytree': { const k = d.s || 1; return Art.draw(ctx, 'y/tree', x + 8, y, !!d.flip, k, k); }
+    case 'pots': return Art.draw(ctx, 'y/pots', x, y, !!d.flip);
+    case 'yhouse':
+      if (!Art.draw(ctx, 'y/rinhouse', x, y)) return false;
+      text(ctx, d.text || 'りんの家', x + 66, y - 11.5, 4.4, '#4a3a2a');
+      return true;
     case 'house':
       if (!Art.draw(ctx, 'deco/rinhouse', x, y)) return false;
       text(ctx, d.text || 'りんの家', x + 18, y - 14.8, 4.4, '#4a3a2a');

@@ -4,11 +4,11 @@ import { sprite } from './registry.mjs';
 import { tr, g, path, ell, circ, rrect, rect, f } from './svg.mjs';
 
 export const C = {
-  skin: '#ffdcbc', skinS: '#f2bb94', skinL: '#fff0e0',
+  skin: '#fdd9b8', skinS: '#f0b894', skinL: '#fff0e0',
   hair: '#4a2b18', hairS: '#35190b', hairL: '#7a4a2c',
-  teal: '#35c3b2', tealS: '#1f9f90', tealL: '#7ee0d3',
+  teal: '#3cc8c0', tealS: '#22a39c', tealL: '#86e4dc',
   white: '#fbfdff', whiteS: '#d6dde6',
-  red: '#f25068', redS: '#cc3550',
+  red: '#f0647a', redS: '#cc4058',
   blue: '#3b6fd8', blueS: '#2a52aa', blueL: '#6d97ee',
   shoe: '#6a3a1e', shoeS: '#4a2610', shoeL: '#99603a',
   eye: '#2a1810', mouth: '#9a3526', tongue: '#ff7d86',
@@ -42,20 +42,20 @@ function arm(x, y, ang, back) {
 
 // ---- 体 ----
 function torso(defs) {
-  const shape = 'M-24 -66 Q-30 -66 -30 -58 L-31 -34 Q-31 -26 -24 -26 L25 -26 Q32 -26 32 -34 L31 -58 Q31 -66 24 -66 Z';
+  const shape = 'M-24 -78 Q-31 -78 -31 -70 L-32 -34 Q-32 -26 -24 -26 L25 -26 Q33 -26 33 -34 L32 -70 Q32 -78 24 -78 Z';
   const cp = defs.clip(`<path d="${shape}"/>`);
   return [
     g([
-      rect(-34, -70, 70, 26, C.teal),
-      rect(-34, -45, 70, 7, C.white),
+      rect(-34, -82, 70, 38, C.teal),
+      rect(-34, -46, 70, 8, C.white),
       rect(-34, -38.5, 70, 14, C.red),
       // 左側（背中側）のかげ
-      rect(-34, -70, 12, 26, C.tealS),
+      rect(-34, -82, 12, 38, C.tealS),
       rect(-34, -45, 12, 7, C.whiteS),
       rect(-34, -38.5, 12, 14, C.redS),
       // えり
-      path('M-12 -66 Q2 -58 16 -66', 'none', { stroke: C.tealS, strokeWidth: 3, strokeLinecap: 'round' }),
-      ell(14, -60, 9, 3, C.tealL, { opacity: 0.55 })
+      path('M-12 -78 Q2 -70 16 -78', 'none', { stroke: C.tealS, strokeWidth: 3, strokeLinecap: 'round' }),
+      ell(14, -70, 10, 3.5, C.tealL, { opacity: 0.55 })
     ], { 'clip-path': cp }),
     // 半ズボン
     path('M-29 -29 L31 -29 L31 -16 Q31 -11 26 -11 L-24 -11 Q-29 -11 -29 -16 Z', C.blue),
@@ -65,55 +65,55 @@ function torso(defs) {
 }
 
 // ---- 頭 ---- mouth: smile/open/o/grin, eyes: normal/blink/x/happy
+// キャラ表に合わせて：まんまるの頭・おかっぱの前髪・くるんとしたアホ毛・大きなたて長の目
 function head(defs, mouth = 'smile', eyes = 'normal') {
-  const faceD = 'M-40 -104 C-40 -134 -14 -152 12 -152 C40 -152 62 -134 62 -106 C62 -78 42 -58 12 -58 C-16 -58 -40 -76 -40 -104 Z';
-  const faceClip = defs.clip(`<path d="${faceD}"/>`);
-  // 前髪の下のふち（ギザギザの前髪）
-  const bangs = 'M-66 -96 C-72 -132 -50 -168 -6 -174 C34 -178 64 -158 70 -128 C73 -114 70 -100 66 -92 ' +
-    'C62 -104 58 -112 52 -116 C50 -108 46 -102 40 -98 C40 -110 36 -120 30 -124 C24 -112 16 -106 6 -104 ' +
-    'C10 -114 10 -122 6 -128 C-4 -116 -18 -110 -32 -110 C-38 -104 -40 -96 -40 -88 C-50 -90 -60 -92 -66 -96 Z';
   const parts = [];
-  // 後ろ髪
-  parts.push(path('M-68 -104 C-70 -148 -40 -172 -2 -172 C30 -172 56 -154 62 -126 L60 -96 C44 -84 20 -80 0 -80 C-20 -76 -40 -70 -52 -64 C-66 -72 -68 -88 -68 -104 Z', C.hairS));
-  parts.push(path('M-58 -70 C-64 -64 -64 -58 -58 -54 C-54 -60 -50 -64 -46 -66 Z', C.hairS));
+  const hairG = defs.radU([[0, '#6b4128'], [0.55, C.hair], [1, C.hairS]], -10, -150, 90);
+  const skinG = defs.radU([[0, '#fff1e2'], [0.6, C.skin], [1, '#f6c9a2']], 30, -108, 64);
+  // 後ろ髪（まるいかたまり）
+  parts.push(circ(-6, -112, 64, C.hairS));
+  parts.push(circ(-4, -114, 61, hairG));
   // 顔
-  parts.push(path(faceD, C.skin));
-  // 前髪のかげ（顔の上）
-  parts.push(g([path(bangs, C.skinS, { transform: 'translate(2 6)' }), ell(-36, -86, 12, 22, C.skinS, { opacity: 0.6 })], { 'clip-path': faceClip }));
+  const faceD = 'M-30 -108 C-30 -134 -6 -148 22 -148 C52 -148 72 -130 72 -104 C72 -74 50 -54 20 -54 C-8 -54 -30 -74 -30 -100 Z';
+  parts.push(path(faceD, skinG));
+  const faceClip = defs.clip(`<path d="${faceD}"/>`);
   // 耳
-  parts.push(ell(-30, -94, 7, 9, C.skin), ell(-30, -94, 3.5, 5, C.skinS));
-  // 前髪
-  parts.push(path(bangs, C.hair));
-  // 髪のつや
-  parts.push(path('M-44 -138 C-30 -160 0 -166 22 -160 C4 -158 -20 -152 -36 -132 Z', C.hairL, { opacity: 0.85 }));
-  parts.push(path('M36 -150 C46 -144 54 -136 58 -126 C52 -130 44 -138 36 -146 Z', C.hairL, { opacity: 0.6 }));
-  // アホ毛
-  parts.push(path('M-8 -170 C-10 -186 0 -198 16 -196 C8 -192 4 -184 6 -172 Z', C.hair));
-  // 目
-  const ex = [20, 46], ey = -97;
-  for (const [i, x] of ex.entries()) {
-    const rx = i === 0 ? 7.2 : 7.8, ry = 11;
+  parts.push(ell(-26, -96, 8, 10, C.skin), ell(-25, -96, 4, 5.5, C.skinS));
+  // 前髪（まっすぐなおかっぱ・少しだけ切れこみ）
+  const bangs = 'M-46 -136 C-36 -166 0 -178 28 -175 C56 -172 74 -152 76 -124 C76 -116 74 -110 72 -106 ' +
+    'C66 -112 60 -116 52 -118 C48 -112 42 -110 36 -110 C34 -116 30 -120 24 -122 C14 -116 0 -114 -12 -116 ' +
+    'C-20 -112 -26 -104 -30 -96 C-38 -108 -44 -122 -46 -136 Z';
+  parts.push(g([path(bangs, '#e9b48c', { transform: 'translate(1 5)', opacity: 0.8 })], { 'clip-path': faceClip }));
+  parts.push(path(bangs, hairG));
+  // 髪のつや（やわらかい光の輪）
+  parts.push(path('M-22 -150 C-8 -166 16 -172 38 -168 C18 -162 -2 -156 -16 -142 Z', '#8a5a3a', { opacity: 0.55 }));
+  // アホ毛（くるん）
+  parts.push(path('M2 -170 C-2 -186 8 -198 22 -196 C31 -194 32 -185 26 -182', 'none', { stroke: C.hair, strokeWidth: 7.5, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+  // 目（大きなたて長・ハイライト2つ）
+  const ey = -98;
+  for (const [x, rx] of [[22, 10], [50, 9]]) {
+    const ry = 13.5;
     if (eyes === 'blink') {
-      parts.push(path(`M${x - 7} ${ey + 2} Q${x} ${ey + 6} ${x + 7} ${ey + 2}`, 'none', { stroke: C.eye, strokeWidth: 2.6, strokeLinecap: 'round' }));
+      parts.push(path(`M${x - 8} ${ey + 3} Q${x} ${ey + 8} ${x + 8} ${ey + 3}`, 'none', { stroke: C.eye, strokeWidth: 3, strokeLinecap: 'round' }));
     } else if (eyes === 'happy') {
-      parts.push(path(`M${x - 7} ${ey + 3} Q${x} ${ey - 7} ${x + 7} ${ey + 3}`, 'none', { stroke: C.eye, strokeWidth: 3, strokeLinecap: 'round' }));
+      parts.push(path(`M${x - 8} ${ey + 4} Q${x} ${ey - 8} ${x + 8} ${ey + 4}`, 'none', { stroke: C.eye, strokeWidth: 3.4, strokeLinecap: 'round' }));
     } else if (eyes === 'x') {
-      parts.push(path(`M${x - 6} ${ey - 6} L${x + 6} ${ey + 6} M${x + 6} ${ey - 6} L${x - 6} ${ey + 6}`, 'none', { stroke: C.eye, strokeWidth: 3, strokeLinecap: 'round' }));
+      parts.push(path(`M${x - 6} ${ey - 6} L${x + 6} ${ey + 6} M${x + 6} ${ey - 6} L${x - 6} ${ey + 6}`, 'none', { stroke: C.eye, strokeWidth: 3.2, strokeLinecap: 'round' }));
     } else {
       parts.push(ell(x, ey, rx, ry, C.eye));
-      parts.push(ell(x, ey + 5, rx * 0.72, ry * 0.36, '#6b3a22', { opacity: 0.9 }));
-      parts.push(circ(x + 2.4, ey - 4.2, 3.3, '#ffffff'));
-      parts.push(circ(x - 2.6, ey + 3.4, 1.5, '#ffffff', { opacity: 0.9 }));
+      parts.push(ell(x, ey + 5.5, rx * 0.7, ry * 0.38, '#7a4a2a', { opacity: 0.85 }));
+      parts.push(circ(x + rx * 0.28, ey - ry * 0.36, rx * 0.46, '#ffffff'));
+      parts.push(circ(x - rx * 0.34, ey + ry * 0.34, rx * 0.2, '#ffffff', { opacity: 0.9 }));
     }
   }
   // ほっぺ
-  parts.push(ell(58, -80, 6, 3.6, '#ff8f9c', { opacity: 0.45 }), ell(4, -80, 6, 3.4, '#ff8f9c', { opacity: 0.35 }));
+  parts.push(ell(4, -78, 8, 4.5, '#ff9aa6', { opacity: 0.45 }), ell(64, -78, 6, 4, '#ff9aa6', { opacity: 0.4 }));
   // 口
-  const mx = 34, my = -76;
-  if (mouth === 'smile') parts.push(path(`M${mx - 5} ${my - 1} Q${mx} ${my + 4} ${mx + 5} ${my - 1}`, 'none', { stroke: C.mouth, strokeWidth: 2.4, strokeLinecap: 'round' }));
-  else if (mouth === 'open') parts.push(path(`M${mx - 6} ${my - 2} Q${mx} ${my - 3} ${mx + 7} ${my - 2} Q${mx + 5} ${my + 8} ${mx} ${my + 8} Q${mx - 5} ${my + 7} ${mx - 6} ${my - 2} Z`, C.mouth), ell(mx + 0.5, my + 4.6, 4, 2.4, C.tongue));
-  else if (mouth === 'o') parts.push(ell(mx, my + 1, 3.6, 4.4, C.mouth));
-  else if (mouth === 'grin') parts.push(path(`M${mx - 7} ${my - 2} Q${mx} ${my + 10} ${mx + 7} ${my - 2} Z`, C.mouth), path(`M${mx - 6} ${my - 1.5} L${mx + 6} ${my - 1.5} L${mx + 5} ${my + 1} L${mx - 5} ${my + 1} Z`, '#ffffff'));
+  const mx = 37, my = -73;
+  if (mouth === 'smile') parts.push(path(`M${mx - 5.5} ${my - 1} Q${mx} ${my + 4.5} ${mx + 5.5} ${my - 1}`, 'none', { stroke: C.mouth, strokeWidth: 2.6, strokeLinecap: 'round' }));
+  else if (mouth === 'open') parts.push(path(`M${mx - 6} ${my - 2} Q${mx} ${my - 3} ${mx + 7} ${my - 2} Q${mx + 5} ${my + 9} ${mx} ${my + 9} Q${mx - 5} ${my + 8} ${mx - 6} ${my - 2} Z`, C.mouth), ell(mx + 0.5, my + 5, 4, 2.6, C.tongue));
+  else if (mouth === 'o') parts.push(ell(mx, my + 1, 3.8, 4.6, C.mouth));
+  else if (mouth === 'grin') parts.push(path(`M${mx - 8} ${my - 2} Q${mx} ${my + 11} ${mx + 8} ${my - 2} Z`, C.mouth), path(`M${mx - 7} ${my - 1.5} L${mx + 7} ${my - 1.5} L${mx + 6} ${my + 1.2} L${mx - 6} ${my + 1.2} Z`, '#ffffff'));
   return parts.join('');
 }
 
@@ -136,15 +136,16 @@ function cape(flow) {
 function rin(defs, p) {
   const bob = p.bob || 0, lean = p.lean || 0;
   const body = [];
-  if (p.cape !== undefined) body.push(cape(p.cape));
-  body.push(arm(-20, -59, p.armB ?? 10, true));
+  if (p.cape !== undefined) body.push(tr(0, -10, cape(p.cape)));
+  body.push(arm(-20, -68, p.armB ?? 10, true));
   body.push(leg(-11, -20, p.legB ?? 0));
   body.push(torso(defs));
-  if (p.badge) body.push(tr(14, -52, path('M0 -6 L1.8 -1.9 6.3 -1.9 2.7 0.9 4 5.4 0 2.7 -4 5.4 -2.7 0.9 -6.3 -1.9 -1.8 -1.9 Z', C.gold)));
+  if (p.badge) body.push(tr(14, -58, path('M0 -6 L1.8 -1.9 6.3 -1.9 2.7 0.9 4 5.4 0 2.7 -4 5.4 -2.7 0.9 -6.3 -1.9 -1.8 -1.9 Z', C.gold)));
   body.push(leg(11, -20, p.legF ?? 0));
-  const headG = tr(0, (p.headBob || 0), head(defs, p.mouth, p.eyes), 1, p.headTilt || 0);
+  // 頭は首のところを中心に少し小さくして、体とのバランスをキャラ表に合わせる
+  const headG = tr(0, (p.headBob || 0) - 12, tr(8, -62, tr(-8, 62, head(defs, p.mouth, p.eyes)), 0.9), 1, p.headTilt || 0);
   body.push(headG);
-  body.push(arm(25, -59, p.armF ?? -8, false));
+  body.push(arm(25, -68, p.armF ?? -8, false));
   return tr(0, bob, body.join(''), 1, lean);
 }
 

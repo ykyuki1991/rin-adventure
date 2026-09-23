@@ -1,7 +1,7 @@
 // オフラインでも遊べるようにするための Service Worker
 // ネットにつながっているときは最新のファイルを取りに行き、つながらないときは保存しておいたファイルを使う
 // ファイルを追加したら ASSETS にも追加し、VERSION の数字を上げてください
-const VERSION = 'rin-adventure-v5';
+const VERSION = 'rin-adventure-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -35,12 +35,7 @@ const ASSETS = [
   './art/decos.svg',
   './art/pf.svg',
   './art/decos2.svg',
-  './art/bg/yakumo-0.svg',
-  './art/bg/yakumo-1.svg',
-  './art/bg/yakumo-2.svg',
-  './art/bg/yakumo-3.svg',
-  './art/bg/yakumo-4.svg',
-  './art/bg/yakumo-5.svg',
+  './art/yakumo.svg',
   './art/bg/kitano-0.svg',
   './art/bg/kitano-1.svg',
   './art/bg/kitano-2.svg',
@@ -100,6 +95,12 @@ const ASSETS = [
   './art/bg/kikusei-0.svg',
   './art/bg/kikusei-1.svg',
   './art/bg/kikusei-2.svg',
+  './art/bg/yakumo-0.svg',
+  './art/bg/yakumo-1.svg',
+  './art/bg/yakumo-2.svg',
+  './art/bg/yakumo-3.svg',
+  './art/bg/yakumo-4.svg',
+  './art/bg/yakumo-5.svg',
   // ART-END
   './icons/icon-192.png',
   './icons/icon-512.png',

@@ -78,7 +78,7 @@ export function tileArt(theme, key) {
       return has(n) ? [n] : has('water/' + kind + (num % 4)) ? ['water/' + kind + (num % 4)] : null;
     }
     case 'pipeTL': case 'pipeTR': case 'pipeL': case 'pipeR':
-      return has('pipe/' + kind) ? ['pipe/' + kind] : null;
+      return has(T + 'pipe/' + kind) ? [T + 'pipe/' + kind] : has('pipe/' + kind) ? ['pipe/' + kind] : null;
     case 'spike': return has('spike') ? ['spike'] : null;
   }
   return null;

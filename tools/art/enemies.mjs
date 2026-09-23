@@ -25,18 +25,18 @@ const SLIME = {
 };
 function slimeBody(c, sx = 1, sy = 1) {
   const [body, dark, light] = c;
-  const d = (k) => `M${-86 * k} 0 C${-90 * k} ${-58 * sy} ${-52 * k} ${-128 * sy} 0 ${-128 * sy} C${52 * k} ${-128 * sy} ${90 * k} ${-58 * sy} ${86 * k} 0 Q0 8 ${-86 * k} 0 Z`;
+  const d = (k) => `M${-94 * k} 0 C${-96 * k} ${-64 * sy} ${-58 * k} ${-110 * sy} 0 ${-110 * sy} C${58 * k} ${-110 * sy} ${96 * k} ${-64 * sy} ${94 * k} 0 Q0 8 ${-94 * k} 0 Z`;
   return tr(0, 0, [
     path(d(sx), dark),
     path(d(sx * 0.95), body, { transform: `translate(0 ${-7 * sy})` }),
-    ell(-36 * sx, -86 * sy, 22 * sx, 13 * sy, '#ffffff', { opacity: 0.75, rot: -30 }),
-    circ(-12 * sx, -104 * sy, 6, '#ffffff', { opacity: 0.8 }),
-    ell(40 * sx, -24 * sy, 26 * sx, 8 * sy, light, { opacity: 0.35 })
+    ell(-44 * sx, -72 * sy, 24 * sx, 13 * sy, '#ffffff', { opacity: 0.8, rot: -32 }),
+    circ(-16 * sx, -94 * sy, 6.5, '#ffffff', { opacity: 0.85 }),
+    ell(44 * sx, -22 * sy, 30 * sx, 8 * sy, light, { opacity: 0.35 })
   ]);
 }
 for (const [name, c] of Object.entries(SLIME)) {
-  sprite('enemies', `slime/${name}/0`, 20, 15, 10, 14, () => tr(10, 14, [slimeBody(c), eyes(16, -62, 22, 13, 19)], 0.1));
-  sprite('enemies', `slime/${name}/1`, 20, 15, 10, 14, () => tr(10, 14, [slimeBody(c, 1.07, 0.9), eyes(18, -56, 23, 13, 18)], 0.1));
+  sprite('enemies', `slime/${name}/0`, 21, 13, 10.5, 12.5, () => tr(10.5, 12.5, [slimeBody(c), eyes(14, -52, 24, 14, 20)], 0.1));
+  sprite('enemies', `slime/${name}/1`, 21, 13, 10.5, 12.5, () => tr(10.5, 12.5, [slimeBody(c, 1.06, 0.9), eyes(16, -47, 25, 14, 19)], 0.1));
   sprite('enemies', `slime/${name}/flat`, 20, 8, 10, 7, () => tr(10, 7, [
     path('M-92 0 C-90 -30 -50 -44 0 -44 C50 -44 90 -30 92 0 Q0 8 -92 0 Z', c[1]),
     path('M-86 -4 C-84 -30 -48 -40 0 -40 C48 -40 84 -30 86 -4 Q0 2 -86 -4 Z', c[0]),
@@ -75,10 +75,11 @@ sprite('enemies', 'spiky/1', 20, 17, 10, 16, () => tr(10, 16, spikyBody(-1), 0.1
 function urchin(ph) {
   const out = [];
   const cy = -66;
-  for (let i = 0; i < 26; i++) {
-    const a = (i / 26) * Math.PI * 2 + ph;
-    const L = 92 + (i % 2) * 12;
-    out.push(path(`M${Math.cos(a) * 40} ${cy + Math.sin(a) * 40} L${Math.cos(a) * L} ${cy + Math.sin(a) * L}`, 'none', { stroke: i % 3 ? '#3a1d63' : '#5b3490', strokeWidth: 7, strokeLinecap: 'round' }));
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2 + ph;
+    const L = 96 + (i % 2) * 8, bw = 0.2;
+    out.push(poly([[Math.cos(a - bw) * 46, cy + Math.sin(a - bw) * 46], [Math.cos(a) * L, cy + Math.sin(a) * L], [Math.cos(a + bw) * 46, cy + Math.sin(a + bw) * 46]], i % 2 ? '#3a1d63' : '#4a2878', { strokeLinejoin: 'round' }));
+    out.push(circ(Math.cos(a) * (L - 3), cy + Math.sin(a) * (L - 3), 4, i % 2 ? '#3a1d63' : '#4a2878'));
   }
   out.push(circ(0, cy, 58, '#3d1f69'));
   out.push(circ(-6, cy - 6, 48, '#55308c'));
@@ -251,14 +252,14 @@ sprite('enemies', 'rock/angry', 26, 29, 1, 1, () => tr(13, 1, rock(true), 0.1));
 function boss(flash) {
   const body = flash ? '#ffffff' : '#7b52b8', dark = flash ? '#dddddd' : '#503283', light = flash ? '#ffffff' : '#a883e0';
   const out = [];
-  const D = k => `M${-200 * k} 0 C${-206 * k} -150 ${-120 * k} -330 0 -330 C${120 * k} -330 ${206 * k} -150 ${200 * k} 0 Q0 16 ${-200 * k} 0 Z`;
+  const D = k => `M${-212 * k} 0 C${-214 * k} -140 ${-132 * k} -252 0 -252 C${132 * k} -252 ${214 * k} -140 ${212 * k} 0 Q0 16 ${-212 * k} 0 Z`;
   out.push(path(D(1), dark));
   out.push(path(D(0.95), body, { transform: 'translate(0 -14)' }));
-  out.push(ell(-96, -232, 44, 26, '#ffffff', { opacity: flash ? 0 : 0.45, rot: -35 }));
-  out.push(circ(-58, -270, 12, '#ffffff', { opacity: flash ? 0 : 0.55 }));
+  out.push(ell(-112, -176, 46, 26, '#ffffff', { opacity: flash ? 0 : 0.45, rot: -35 }));
+  out.push(circ(-74, -212, 12, '#ffffff', { opacity: flash ? 0 : 0.55 }));
   out.push(ell(80, -60, 70, 18, light, { opacity: 0.3 }));
   // 王冠
-  out.push(tr(0, -312, [
+  out.push(tr(0, -240, [
     path('M-86 20 L-100 -80 L-50 -30 L0 -104 L50 -30 L100 -80 L86 20 Z', '#f0a800'),
     path('M-80 14 L-92 -66 L-50 -22 L0 -90 L50 -22 L92 -66 L80 14 Z', '#ffd23a'),
     rect(-86, 0, 172, 22, '#f0a800'), rect(-86, 0, 172, 8, '#ffe27a'),
@@ -268,15 +269,15 @@ function boss(flash) {
   ].join('')));
   // 顔
   for (const s of [-1, 1]) {
-    const x = s * 62, y = -160;
+    const x = s * 62, y = -132;
     out.push(ell(x, y, 40, 42, '#ffffff'));
     out.push(circ(x + 6, y + 6, 22, '#e01b2a'));
     out.push(circ(x + 6, y + 6, 9, '#2a0a12'));
     out.push(circ(x - 2, y - 4, 6, '#ffffff'));
     out.push(path(`M${x - s * 54} ${y - 62} L${x + s * 44} ${y - 30}`, 'none', { stroke: '#1d1030', strokeWidth: 20, strokeLinecap: 'round' }));
   }
-  out.push(path('M-86 -84 Q0 -30 86 -84 Q60 -36 0 -36 Q-60 -36 -86 -84 Z', '#1d1030'));
-  out.push(poly([[-52, -70], [-38, -44], [-26, -66]], '#ffffff'), poly([[26, -66], [38, -44], [52, -70]], '#ffffff'));
+  out.push(path('M-80 -66 Q0 -18 80 -66 Q56 -24 0 -24 Q-56 -24 -80 -66 Z', '#1d1030'));
+  out.push(poly([[-50, -54], [-37, -32], [-25, -50]], '#ffffff'), poly([[25, -50], [37, -32], [50, -54]], '#ffffff'));
   return out.join('');
 }
 sprite('enemies', 'boss/0', 44, 46, 22, 45, () => tr(22, 45, boss(false), 0.1));

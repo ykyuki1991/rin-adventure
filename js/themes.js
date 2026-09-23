@@ -1,3 +1,4 @@
+import { Art } from './art.js';
 // 神戸の場所ごとの色と背景
 // 背景は何枚かの層（遠く→近く）を横にくり返して描き、奥ほどゆっくり動かす（f が小さいほど遠い）
 
@@ -17,7 +18,7 @@ const theme = o => ({ ...base, ...o });
 export const THEMES = {
   // 八雲通・春日野道（下町・商店街）
   yakumo: theme({
-    sky: ['#62bff2', '#d4f0ff'], skyStops: [[0, '#3c9de6'], [0.55, '#86cdf4'], [1, '#dcf2fc']], groundStyle: 'asphalt',
+    sky: ['#62bff2', '#d4f0ff'], skyStops: [[0, '#4aaef0'], [0.45, '#7cc8f4'], [0.8, '#b8e2f8'], [1, '#d8effa']], groundStyle: 'asphalt',
     ground: '#7f838c', groundDark: '#6a6e76', top: '#d3cbbd', topDark: '#a99f90', topLight: '#ece6da',
     hard: '#b9b4ab', hardLight: '#dedad2', hardDark: '#86817a', semiStyle: 'arcade', bird: 'crow'
   }),
@@ -403,8 +404,10 @@ export const BG = {
     },
     // SVGの背景のとき：3枚目（高架のある層）のすぐ後ろに電車を描く
     artDyn: { after: 3, draw(ctx, cam, vw, time) {
-      const P = vw + 500, x = ((time * 70 - cam * 0.3) % P + P) % P - 250;
-      bgTrain(ctx, x, 150, 5);
+      // 阪急電車（3両）が高架の上を走る
+      const P = vw + 700, x = ((time * 60 - cam * 0.26) % P + P) % P - 300;
+      if (!Art.has('bg/hankyu')) return bgTrain(ctx, x, 122, 5);
+      for (let i = 0; i < 3; i++) Art.draw(ctx, 'bg/hankyu', x + i * 70, 122);
     } }
   },
   zoo: {
