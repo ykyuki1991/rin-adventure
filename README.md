@@ -119,6 +119,7 @@ js/art-data.js        絵の一覧（自動生成）
 art/                  SVG の絵
 tools/art/            SVG の絵を作るプログラム
 js/sprites.js         キャラクター・敵・アイテムの絵
+js/picto.js           看板・ヒント・お知らせに使う絵記号（ステージの中には文字を出さない）
 js/audio.js           効果音と BGM（音声ファイルなし、その場で合成）
 js/input.js           タッチ・キーボード操作、ズーム防止
 js/storage.js         進みぐあいの保存
@@ -139,12 +140,12 @@ b.train(60, 12, 20, { look: 'train' });       // 往復する電車
 b.ropeway(14, 12, 60, 9, 4, 42);              // ロープウェイ（ゴンドラ4台）
 b.wheel(90, 6, 4, 6, 0.3);                    // 観覧車
 b.zone('fall', 100, 0, 3, 13);                // 滝（下向きの流れ）/ spray / wind
-b.sign(8, '八雲通', 'やくもどおり', 13, 'station'); // 看板
+b.sign(8, '八雲通', 'やくもどおり', 13, 'station'); // 看板（地名は js/picto.js の LABEL_PICTO で絵記号になる）
 b.enemy('slime', 17);                         // 敵（slime / spiky / bird / frog / rock / crab / boar / penguin / lantern / boss）
 b.enemy('jelly', 45, 13, { range: 2 });       // クラゲ（range マスぶん上下する）
 b.enemy('tako', 101, 13, { height: 7 });      // タコ（水の中から height マスとび出す）
 b.medal(86, 4, '観覧車のまん中');             // ひみつのメダル（3つ目はステージ選択に出るヒント）
-b.hint(6, 7, '？ブロックを 下からたたこう');  // ふきだしのヒント
+b.hint(6, 7, ['rin', 'arrowU', 'qblock']);  // ふきだしのヒント（js/picto.js の絵記号のならび）
 b.coinArc(18, 24, 11, 2);                     // コインを山なりに並べる（かべの中には置かない）
 b.coinLine(20, 9, 56, 6, 4);                  // コインを線の上に並べる
 b.coinsAbove(88, 152, 5);                     // 足場のすぐ上にコインを並べる

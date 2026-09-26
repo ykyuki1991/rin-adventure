@@ -266,6 +266,7 @@ h2.pop { animation: pop 0.5s cubic-bezier(.2, 1.6, .5, 1) both; color: #ffe66d; 
 .si-go-row { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 2px; }
 .stage-info .btn.go { font-size: clamp(15px, 5.2vh, 22px); min-width: 6.4em; padding: 0.3em 1.2em; }
 .go-arrow { margin-left: 0.35em; font-weight: 900; }
+.title-rin { position: absolute; left: 12%; bottom: 12.5vh; width: clamp(64px, 26vh, 112px); height: auto; pointer-events: none; }
 .si-rin { position: absolute; right: -6px; bottom: -4px; width: clamp(30px, 11vh, 46px); height: auto; pointer-events: none; }
 .c-green { color: #a8e6a1 !important; }
 .c-blue { color: #9ad7ff !important; }

@@ -5,12 +5,14 @@ import { portTower, ferris } from './themes.js';
 import { zoneActive, windDir } from './zones.js';
 import { Art } from './art.js';
 import { SD } from './sd/index.js';
+import { labelPicto, picto, LABEL_PICTO } from './picto.js';
 
 const TAU = Math.PI * 2;
 const circle = (ctx, x, y, r) => { ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); };
 const FONT = '"Hiragino Maru Gothic ProN", "Hiragino Sans", "Arial Rounded MT Bold", sans-serif';
 
 function text(ctx, str, x, y, size, color, stroke, weight = 'bold') {
+  if (labelPicto(ctx, str, x, y, size, color) !== 'text') return; // 看板は文字でなく絵記号で
   ctx.font = `${weight} ${size}px ${FONT}`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (stroke) { ctx.lineWidth = size * 0.28; ctx.strokeStyle = stroke; ctx.lineJoin = 'round'; ctx.strokeText(str, x, y); }
@@ -25,16 +27,16 @@ function tree(ctx, x, y, s, leaf, trunk = '#6d4a2d') {
 // ===================== 飾り =====================
 // はじめての人向けのヒント（ふきだし）。(x, y) がふきだしのしっぽの先
 function drawHint(ctx, d, time) {
-  const lines = String(d.text).split('\n');
-  ctx.font = `bold 7px ${FONT}`;
-  const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 12, h = lines.length * 9 + 7;
+  // text は絵記号の名前のならび（js/picto.js）。文字列なら「|」で区切る
+  const keys = Array.isArray(d.text) ? d.text : String(d.text).split('|');
+  const S = 12, G = 14, w = keys.length * G + 8, h = 19;
   const bob = Math.sin(time * 2.2 + d.x * 0.01) * 1.2;
   const cx = d.x + 8, by = d.y - 5 + bob, bx = cx - w / 2, top = by - h;
-  ctx.fillStyle = 'rgba(0,0,0,0.18)'; rr(ctx, bx + 1, top + 1.5, w, h, 5); ctx.fill();
-  ctx.fillStyle = '#fffdf4'; rr(ctx, bx, top, w, h, 5); ctx.fill();
+  ctx.fillStyle = 'rgba(40,30,60,0.18)'; rr(ctx, bx + 1, top + 1.5, w, h, 7); ctx.fill();
+  ctx.fillStyle = '#fffdf4'; rr(ctx, bx, top, w, h, 7); ctx.fill();
   ctx.beginPath(); ctx.moveTo(cx - 3.5, by - 0.5); ctx.lineTo(cx, by + 5); ctx.lineTo(cx + 3.5, by - 0.5); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = '#ffb703'; ctx.lineWidth = 1; rr(ctx, bx, top, w, h, 5); ctx.stroke();
-  lines.forEach((l, i) => text(ctx, l, cx, top + 7.5 + i * 9, 7, '#3a2e2a'));
+  ctx.strokeStyle = '#ffb703'; ctx.lineWidth = 1; rr(ctx, bx, top, w, h, 7); ctx.stroke();
+  keys.forEach((k, i) => picto(ctx, k, bx + 4 + G / 2 + i * G, top + h / 2, S, '#5a4a44', '#fffdf4'));
 }
 
 export function drawDeco(ctx, d, theme, time, night) {
@@ -91,7 +93,7 @@ const YSHOP = {
 function shopSign(ctx, kind, sx, y) {
   const s = YSHOP[kind], fr = Art.frame('y/shop/' + kind);
   if (!s || !fr) return;
-  text(ctx, s[0], sx + fr[3] / 2, y - (kind === 'wagashi' ? 59 : 55.5), 7, s[1]);
+  text(ctx, s[0], sx + fr[3] / 2, y - (kind === 'wagashi' ? 59 : 55.5), 8.6, s[1]);
 }
 
 // SVGの絵がある飾り（なければ false を返して、これまでの絵で描く）
@@ -118,7 +120,7 @@ function drawDecoArt(ctx, d, x, y, time, night) {
     }
     case 'ygate':
       if (!Art.draw(ctx, 'y/gate', x, y)) return false;
-      text(ctx, d.text || '春日野道商店街', x + 48, y - 135.5, 8.4, '#c8423a');
+      text(ctx, d.text || '春日野道商店街', x + 48, y - 132, 12.5, '#c8423a');
       if (d.kana !== '') text(ctx, d.kana || 'かすがのみち しょうてんがい', x + 48, y - 126.2, 3.4, '#8a5a3a');
       return true;
     case 'bld':
@@ -333,8 +335,10 @@ function drawDecoArt(ctx, d, x, y, time, night) {
   return false;
 }
 
+// 看板：地名の文字のかわりに、その場所の絵記号を大きく描く
 function drawSign(ctx, d, night) {
   const cx = d.x + 8, by = d.y;
+  const key = LABEL_PICTO[d.text];
   const post = (px, top, w = 2.4, c = '#6f7680') => {
     ctx.fillStyle = c; ctx.fillRect(px - w / 2, top, w, by - top);
     ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(px - w / 2, top, w * 0.35, by - top);
@@ -344,36 +348,35 @@ function drawSign(ctx, d, night) {
     ctx.fillStyle = fill; rr(ctx, x, y, w, h, r); ctx.fill();
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = sw; rr(ctx, x, y, w, h, r); ctx.stroke(); }
   };
-  if (d.style === 'station') { // 駅名標
-    const w = Math.max(56, d.text.length * 13 + 16);
+  const tri = (x, y, dir, c) => { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x + dir * 2.2, y); ctx.lineTo(x - dir * 1.4, y - 2); ctx.lineTo(x - dir * 1.4, y + 2); ctx.closePath(); ctx.fill(); };
+  if (d.style === 'station') { // 駅名標（白い板＋色の帯＋となりの駅への矢印）
+    const w = 44;
     post(cx - w / 2 + 7, by - 30); post(cx + w / 2 - 7, by - 30);
-    board(cx - w / 2, by - 50, w, 24, 3, '#ffffff', '#b8c0c9', 0.8);
-    ctx.fillStyle = d.color || '#1f5fbf'; ctx.fillRect(cx - w / 2 + 0.5, by - 32.5, w - 1, 3);
-    text(ctx, d.text, cx, by - 42, 11, '#1b1b1b');
-    if (d.kana) text(ctx, d.kana, cx, by - 35.4, 4.6, '#444', null, 'normal');
+    board(cx - w / 2, by - 54, w, 27, 3, '#ffffff', '#b8c0c9', 0.8);
+    if (key) picto(ctx, key, cx, by - 44.5, 15, '#2a3140');
+    ctx.fillStyle = d.color || '#1f5fbf'; ctx.fillRect(cx - w / 2 + 0.5, by - 34, w - 1, 3.4);
+    tri(cx - w / 2 + 4, by - 32.3, -1, '#ffffff'); tri(cx + w / 2 - 4, by - 32.3, 1, '#ffffff');
     return;
   }
   if (d.style === 'wood') { // 木の案内板
-    const w = Math.max(40, d.text.length * 10 + 12);
+    const w = 26;
     post(cx, by - 30, 3, '#6d4a2d');
-    board(cx - w / 2, by - 44, w, 18, 3, '#b07a45', '#6d4a2d', 1);
-    text(ctx, d.text, cx, by - 37, 8.5, '#fff8e1', '#5a3a1f');
-    if (d.kana) text(ctx, d.kana, cx, by - 29.5, 4.4, '#fff8e1', '#5a3a1f', 'normal');
+    board(cx - w / 2, by - 48, w, 21, 3, '#b07a45', '#6d4a2d', 1);
+    ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fillRect(cx - w / 2 + 2, by - 46, w - 4, 2);
+    if (key) picto(ctx, key, cx, by - 37.5, 14, '#fff3dc');
     return;
   }
   if (d.style === 'street') { // 青い住所の板
     post(cx, by - 34, 2.4);
-    board(cx - 19, by - 45, 38, 15, 2.5, '#1f4fa0', '#ffffff', 1);
-    text(ctx, d.text, cx, by - 39.3, 7, '#ffffff');
-    if (d.kana) text(ctx, d.kana, cx, by - 33.6, 3.6, '#dce7ff', null, 'normal');
+    board(cx - 12, by - 49, 24, 18, 2.5, '#1f4fa0', '#ffffff', 1);
+    if (key) picto(ctx, key, cx, by - 40, 12.5, '#ffffff');
     return;
   }
   // 看板（ふつう）
-  const w = Math.max(44, d.text.length * 11 + 14);
-  post(cx - w / 2 + 8, by - 26, 2.6, '#6d5140'); post(cx + w / 2 - 8, by - 26, 2.6, '#6d5140');
-  board(cx - w / 2, by - 45, w, 21, 4, night ? '#2b3a5e' : '#fffaf2', d.color || (night ? '#ffcf7a' : '#e07a5a'), 1.6);
-  text(ctx, d.text, cx, by - 36.8, 9, night ? '#ffe9a8' : '#3a2e2a');
-  if (d.kana) text(ctx, d.kana, cx, by - 29.2, 4.4, night ? '#dfe7ff' : '#6a5a52', null, 'normal');
+  const w = 32;
+  post(cx - w / 2 + 7, by - 26, 2.6, '#6d5140'); post(cx + w / 2 - 7, by - 26, 2.6, '#6d5140');
+  board(cx - w / 2, by - 49, w, 25, 5, night ? '#2b3a5e' : '#fffaf2', d.color || (night ? '#ffcf7a' : '#e07a5a'), 1.6);
+  if (key) picto(ctx, key, cx, by - 36.5, 17, night ? '#ffe9a8' : '#3a2e2a');
 }
 
 function drawHouse(ctx, x, y, label, night) {
@@ -998,9 +1001,10 @@ export function drawGoal(ctx, g, time, night) {
   ctx.fillStyle = 'rgba(0,0,0,0.2)'; rr(ctx, hx - 9, gy - 74, W + 20, 22, 5); ctx.fill();
   ctx.fillStyle = night ? '#2b3a6e' : '#fffaf0'; rr(ctx, hx - 10, gy - 76, W + 20, 22, 5); ctx.fill();
   ctx.strokeStyle = '#ffb703'; ctx.lineWidth = 2; ctx.stroke();
-  const label = g.label || 'ゴール';
-  const size = Math.min(10, (W + 12) / (label.length * 0.95));
-  text(ctx, label, hx + W / 2, gy - 65, size, night ? '#ffe9a8' : '#c1440e');
+  // つぎの場所の絵記号と、その両がわに星
+  const ink = night ? '#ffe9a8' : '#c1440e';
+  picto(ctx, LABEL_PICTO[g.label] || 'star', hx + W / 2, gy - 65, 17, ink);
+  for (const sx of [-1, 1]) { ctx.fillStyle = '#ffb703'; starPath(ctx, hx + W / 2 + sx * 25, gy - 65, 3.4, 1.5); ctx.fill(); }
   // 矢印
   ctx.fillStyle = '#ffb703'; ctx.beginPath(); ctx.moveTo(hx + W / 2 - 8, gy - 48); ctx.lineTo(hx + W / 2 + 4, gy - 48); ctx.lineTo(hx + W / 2 + 4, gy - 52); ctx.lineTo(hx + W / 2 + 12, gy - 45); ctx.lineTo(hx + W / 2 + 4, gy - 38); ctx.lineTo(hx + W / 2 + 4, gy - 42); ctx.lineTo(hx + W / 2 - 8, gy - 42); ctx.closePath(); ctx.fill();
   // ポール

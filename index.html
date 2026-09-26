@@ -35,7 +35,9 @@
     </div>
   </div>
   <div id="jumpZone">
-    <div id="jumpBtn" class="pad-btn jump">ジャンプ</div>
+    <div id="jumpBtn" class="pad-btn jump" aria-label="ジャンプ">
+      <svg viewBox="0 0 24 24" width="44" height="44"><path d="M5 15.5 12 8.5l7 7" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
   </div>
 </div>
 
@@ -48,6 +50,7 @@
     <div class="btn small" id="btnHelp">遊び方</div>
     <div class="btn small sound-btn" id="btnSound1">音：オン</div>
   </div>
+  <canvas id="titleRin" class="title-rin" width="128" height="128" aria-hidden="true"></canvas>
   <p class="hint hidden" id="installHint">Safari の共有ボタン →「ホーム画面に追加」で、アプリのように全画面で遊べるよ</p>
 </section>
 

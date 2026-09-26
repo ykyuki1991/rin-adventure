@@ -98,13 +98,11 @@ DECOS.s3_arch = (ctx, d, x, y) => { Art.draw(ctx, 's3/arch', x, y); };
 DECOS.s3_teahouse = (ctx, d, x, y) => {
   if (!Art.draw(ctx, 's3/teahouse', x, y)) return;
   label(ctx, d.text || 'おんたき茶屋', x + 26, y - 51.5, 4.6, '#5a3a24');
-  const s = '滝見だんご';
-  for (let i = 0; i < s.length; i++) label(ctx, s[i], x + 0.3, y - 50 + i * 5.4, 4, '#ffffff');
+  label(ctx, '滝見だんご', x + 0.3, y - 44.6, 4.2, '#ffffff');
 };
 // 道しるべ（たて書き）
 DECOS.s3_post = (ctx, d, x, y) => {
   if (!Art.draw(ctx, 's3/post', x + 8, y)) return;
   const s = d.text || '布引の滝';
-  const sz = Math.min(4.8, 26 / s.length);
-  for (let i = 0; i < s.length; i++) label(ctx, s[i], x + 8, y - 37.5 + i * (sz + 0.6), sz, '#4a3220');
+  label(ctx, s, x + 8, y - 30, 4.8, '#4a3220');
 };

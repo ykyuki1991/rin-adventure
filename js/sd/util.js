@@ -1,11 +1,13 @@
 // ステージごとの飾り（js/sd/stageN.js）から使う小さな道具
 export { Art } from '../art.js';
 export { TILE } from '../config.js';
+import { labelPicto } from '../picto.js';
 export const TAU = Math.PI * 2;
 export const FONT = '"Hiragino Maru Gothic ProN", "Hiragino Sans", "Arial Rounded MT Bold", sans-serif';
 
 // 文字（看板の名前など）。size はゲームの1ドット単位
 export function text(ctx, str, x, y, size, color, stroke, weight = 'bold') {
+  if (labelPicto(ctx, str, x, y, size, color) !== 'text') return; // 看板は文字でなく絵記号で
   ctx.font = `${weight} ${size}px ${FONT}`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (stroke) { ctx.lineWidth = size * 0.28; ctx.strokeStyle = stroke; ctx.lineJoin = 'round'; ctx.strokeText(str, x, y); }

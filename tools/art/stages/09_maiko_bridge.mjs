@@ -168,6 +168,21 @@ bgLayer('bridge', { f: 0.02, w: 1600, y: 70, h: 170 }, (defs, w) => {
   // 日の光のきらめき（右）
   for (let i = 0; i < 70; i++) { const x = 900 + (r() - 0.5) * 520, y = BH + 2 + Math.pow(r(), 1.3) * 60; out.push(rrect(x, y, 2 + r() * 8, 0.8, 0.4, '#fff3d6', { opacity: 0.35 + r() * 0.4 })); }
   for (let i = 0; i < 70; i++) { const y = BH + 2 + Math.pow(r(), 1.4) * 96; out.push(rrect(r() * w, y, 3 + r() * 8 * (1 + (y - BH) / 50), 0.7, 0.35, '#ffffff', { opacity: 0.25 + r() * 0.3 })); }
+  // 行く先に見える、淡路島がわの主塔とケーブル（かすんで見える。橋の上のどこからでも見える位置 x=380〜600）
+  {
+    const tx = 500, top = 74, deck = 124, c = '#d3dde6', hz = { opacity: 0.85 };
+    const cab = `M360 ${deck - 2} Q${tx - 60} ${deck - 10} ${tx} ${top} Q${tx + 50} ${deck - 18} 600 ${BH - 3}`;
+    for (let x = 372; x < 596; x += 6) {
+      if (Math.abs(x - tx) < 5) continue;
+      const u = x < tx ? (x - 360) / (tx - 360) : (x - tx) / (600 - tx);
+      const y = x < tx ? (1 - u) ** 2 * (deck - 2) + 2 * (1 - u) * u * (deck - 10) + u * u * top : (1 - u) ** 2 * top + 2 * (1 - u) * u * (deck - 18) + u * u * (BH - 3);
+      out.push(rect(x, y, 0.4, Math.max(0, (x < 590 ? deck : BH) - y), '#dbe3ea', { opacity: 0.6 }));
+    }
+    out.push(rect(tx - 5, top, 2.6, BH + 4 - top, c, hz), rect(tx + 2.4, top, 2.6, BH + 4 - top, c, hz));
+    for (let k = 0; k < 5; k++) { const y0 = top + 6 + k * 9; out.push(path(`M${tx - 2.4} ${y0} L${tx + 2.4} ${y0 + 9} M${tx + 2.4} ${y0} L${tx - 2.4} ${y0 + 9}`, 'none', st(c, 0.6, hz))); }
+    out.push(rect(tx - 6, top - 2, 12, 2.4, c), circ(tx - 4.6, top - 3, 0.7, '#e0443a'), circ(tx + 4.6, top - 3, 0.7, '#e0443a'));
+    out.push(path(cab, 'none', st('#e4ebf1', 1)), rect(360, deck, 240, 2.2, '#cfd9e2', hz), ell(tx, BH + 4, 9, 1.4, '#c3cfd8', hz));
+  }
   return tr(0, -70, out.join(''));
 });
 // 海峡（潮の流れのすじ・白波・漁船）

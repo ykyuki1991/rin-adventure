@@ -27,6 +27,7 @@ export function starPath(ctx, cx, cy, r1, r2, n = 5, rot = -Math.PI / 2) {
 }
 
 import { Art } from './art.js';
+import { picto } from './picto.js';
 
 // 足元のかげ
 export function shadow(ctx, cx, by, w, a = 0.2) {
@@ -885,12 +886,24 @@ export function drawParticle(ctx, q) {
     ctx.restore();
   } else if (q.type === 'text') {
     ctx.globalAlpha = Math.min(1, a * 2);
+    // 文字のかわりの絵（中間ポイントの旗・ボスののこりのハート）
+    if (q.hearts) {
+      for (let i = 0; i < q.hearts; i++) drawHeart(ctx, q.x + (i - (q.hearts - 1) / 2) * 10, q.y - 3, 0, 0.75);
+      ctx.globalAlpha = 1; return;
+    }
+    if (q.icon) {
+      const ix = q.text ? q.x - 7 : q.x;
+      picto(ctx, q.icon, ix + 0.6, q.y - 2.4, 12, 'rgba(27,27,27,0.55)');
+      picto(ctx, q.icon, ix, q.y - 3, 12, q.color || '#ffffff');
+      if (!q.text) { ctx.globalAlpha = 1; return; }
+    }
     ctx.font = 'bold 8px "Hiragino Maru Gothic ProN", "Arial Rounded MT Bold", sans-serif';
     ctx.textAlign = 'center';
     ctx.lineWidth = 2.2; ctx.strokeStyle = '#1b1b1b';
-    ctx.strokeText(q.text, q.x, q.y);
-    ctx.fillStyle = q.text === '1UP' ? '#7dff7a' : '#ffffff';
-    ctx.fillText(q.text, q.x, q.y);
+    const tx = q.icon ? q.x + 5 : q.x;
+    ctx.strokeText(q.text, tx, q.y);
+    ctx.fillStyle = q.text === '1UP' ? '#7dff7a' : (q.color || '#ffffff');
+    ctx.fillText(q.text, tx, q.y);
     ctx.globalAlpha = 1;
   }
 }
