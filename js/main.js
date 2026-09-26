@@ -152,7 +152,7 @@ class App {
     this.mode = 'title';
     this.startDemo();
     this.showScreen('title');
-    this.sound.playBgm('sky');
+    this.sound.playBgm('title');
   }
 
   goSelect() {
@@ -160,7 +160,7 @@ class App {
     this.startDemo();
     this.renderSelect();
     this.showScreen('select');
-    this.sound.playBgm('sky');
+    this.sound.playBgm('title');
   }
 
   startDemo() {
