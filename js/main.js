@@ -258,6 +258,18 @@ class App {
   }
 
   // 出発ボタンのよこの、りんの顔
+  // タイトルの りん（待機・まばたき・ときどき よろこび）
+  drawTitleRin(t) {
+    const c = $('titleRin');
+    if (!c || !Art.has('rin/idle0')) return;
+    const ctx = c.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height);
+    const k = t % 4, name = k > 3 ? 'rin/win' : (Math.floor(t * 10) % 37 === 0 ? 'rin/blink' : 'rin/idle' + (Math.floor(t * 2) & 1));
+    ctx.setTransform(c.width / 32, 0, 0, c.height / 32, 0, 0);
+    ctx.fillStyle = 'rgba(40,40,60,0.18)'; ctx.beginPath(); ctx.ellipse(16, 29.5, 7, 1.6, 0, 0, Math.PI * 2); ctx.fill();
+    Art.draw(ctx, name, 16, 29.5 - (k > 3 ? Math.sin((k - 3) * Math.PI) * 3 : 0));
+  }
+
   drawRinIcon() {
     const c = $('siRin');
     if (!c || !Art.has('rin/icon')) return;
@@ -404,6 +416,7 @@ class App {
     }
     this.renderer.draw(this.game, this);
     if (this.mode === 'select') this.drawThumb();
+    if (this.mode === 'title') this.drawTitleRin(now / 1000);
   }
 }
 

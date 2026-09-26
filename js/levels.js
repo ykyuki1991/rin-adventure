@@ -72,11 +72,11 @@ function stage1() {
   b.row(172, 7, 'ooooo');
   b.enemy('slime', 170, 7).enemy('boar', 175, 7).enemy('bird', 178, 3).enemy('spiky', 182, 7);
   // はじめての人へのヒント
-  b.hint(6, 7, '◀ ▶ で歩く\nジャンプボタンで とぶ');
-  b.hint(14, 7, '？ブロックを 下からたたこう');
-  b.hint(20, 8, '敵は 上から ふんで たおそう');
-  b.hint(27, 8, 'ジャンプを長く押すと\n高くとべるよ');
-  b.hint(82, 6, '電車に乗って\n川をわたろう');
+  b.hint(6, 7, ['btnL', 'btnR', 'plus', 'btnJ']);
+  b.hint(14, 7, ['rin', 'arrowU', 'qblock']);
+  b.hint(20, 8, ['rin', 'arrowD', 'slime']);
+  b.hint(27, 8, ['btnHold', 'arc']);
+  b.hint(82, 6, ['rin', 'arrowD', 'train', 'arrowR']);
   // コインの道しるべ
   b.coinArc(18, 24, 11, 2).coinArc(24, 29, 10, 2);
   b.coinArc(89, 96, 6, 1).coinArc(104, 111, 6, 1);
@@ -151,8 +151,8 @@ function stage2() {
   b.deco('s2_sakura', 185.5, 13, { wpx: 70 }).deco('s2_signpost', 190, 13, { labels: ['しんこうべ', 'もん', 'でぐち'] });
   b.enemy('penguin', 156).enemy('spiky', 162).enemy('penguin', 168).enemy('bird', 172, 7).enemy('slime', 178);
   b.row(165, 9, 'B?B?B');
-  b.hint(32, 8, 'キリンの頭に乗ろう');
-  b.hint(85, 4, 'ゾウのシャワーに乗ると\n上までとべるよ');
+  b.hint(32, 8, ['rin', 'arrowD', 'giraffe']);
+  b.hint(85, 4, ['elephant', 'arrowU', 'rin']);
   // コインの道しるべ
   b.coinArc(18, 23, 11, 2).coinArc(35, 45, 5, 2);
   b.row(89, 4, 'oo').row(89, 7, 'oo').row(89, 10, 'oo');
@@ -255,7 +255,7 @@ function stage3() {
   for (const [x, y, v, k] of [[35.5, 10, 0, 0.6], [52, 10, 1, 0.7], [59, 10, 0, 0.6], [76, 12, 0, 0.5], [118, 12, 1, 0.5], [132, 9, 1, 0.8], [139.5, 9, 0, 0.7], [160, 9, 1, 0.8],
     [171, 6, 0, 0.9], [177.5, 6, 1, 1], [185, 6, 0, 0.8], [191.5, 6, 1, 1], [199, 6, 0, 0.9], [206, 6, 1, 1]]) b.deco('ivy', x, y, { v, s: k, layer: 'mid', flip: x % 2 < 1 });
   b.checkpoint(156, 9);                 // 雄滝をこえたところ
-  b.hint(39, 6, '滝の中は\n下へおされるよ');
+  b.hint(39, 6, ['waterfall', 'arrowD']);
   // コインの道しるべ
   b.coinArc(40, 47, 9, 2).coinArc(64, 71, 10, 2).coinArc(106, 113, 10, 2);
   b.coinsAbove(129, 143, 3, 0).coinArc(183, 189, 5, 2);
@@ -323,8 +323,8 @@ function stage4() {
   // 石がきのツタと花（タイルの前）
   for (const [x, y, v, k] of [[61, 9, 0, 0.7], [70, 9, 1, 0.6], [127, 7, 1, 0.9], [145, 7, 0, 1], [163, 7, 1, 0.8], [176, 5, 0, 1], [193, 7, 1, 0.9], [212, 7, 0, 0.8]]) b.deco('s4_ivy', x, y, { v, s: k, layer: 'mid', flip: x % 2 === 0 });
   b.checkpoint(126, 7);                 // 2本目のロープウェイをおりたところ
-  b.hint(10, 8, 'ゴンドラに 乗ろう');
-  b.hint(74, 5, '風がふくと\n横に流されるよ');
+  b.hint(10, 8, ['rin', 'arrowD', 'gondola']);
+  b.hint(74, 5, ['wind', 'arrowR', 'rin']);
   // コインの道しるべ（ゴンドラの通り道の少し上）
   b.coinLine(20, 9, 56, 6, 4).coinLine(82, 6, 120, 4, 4);
   b.coinArc(128, 134, 6, 2).coinArc(185, 191, 6, 2).coinsAbove(200, 203, 1, 0);
@@ -614,7 +614,7 @@ function stage8() {
   b.row(186, 9, 'BLB');                 // 明石焼き（1UP）
   b.enemy('crab', 190);
   b.checkpoint(170);                    // パラソルの階段のあと
-  b.hint(93, 8, 'シャチの背中に 乗ろう');
+  b.hint(93, 8, ['rin', 'arrowD', 'orca']);
   // コインの道しるべ（浮き輪のあいだ・シャチのジャンプ・パラソル）
   b.coinArc(44, 48, 10, 2).coinArc(48, 52, 10, 2).coinArc(52, 56, 10, 2).coinArc(56, 60, 10, 2);
   b.coinArc(99, 106, 8, 3).coinArc(112, 121, 8, 3);

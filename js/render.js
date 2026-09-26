@@ -8,8 +8,11 @@ import { zoneActive, windDir } from './zones.js';
 import { Art } from './art.js';
 import { tileArt } from './tileart.js';
 import { applyStagePatches } from './sd/index.js';
+import { picto } from './picto.js';
 
 applyStagePatches(THEMES, BG);
+// ステージの目じるし（はじめの名札に出す絵記号）
+const STAGE_MARK = { 1: 'arcade', 2: 'panda', 3: 'waterfall', 4: 'gondola', 5: 'rooster', 6: 'gate', 7: 'porttower', 8: 'orca', 9: 'bridge', 10: 'nightview' };
 
 const VARIANT_MATS = new Set(['container', 'parasol']);
 const FONT = '"Hiragino Maru Gothic ProN", "Hiragino Sans", "Arial Rounded MT Bold", sans-serif';
@@ -475,6 +478,20 @@ export class Renderer {
     for (const z of game.zones) ctx.strokeRect(z.x, z.y, z.w, z.h);
   }
 
+  // お知らせの絵（アイテム・ボスはゲームの中と同じ絵、ほかは js/picto.js の絵記号）
+  drawToken(ctx, k, x, y, time) {
+    const sc = (s, f) => { ctx.save(); ctx.translate(x, y); ctx.scale(s, s); f(); ctx.restore(); };
+    switch (k) {
+      case 'apple': return sc(1, () => S.drawApple(ctx, 0, 0, time));
+      case 'boots': return sc(1, () => S.drawBoots(ctx, 0, 0, time));
+      case 'istar': return sc(1, () => S.drawStar(ctx, 0, 0, time));
+      case 'boss': if (Art.has('boss/0')) return sc(0.36, () => Art.draw(ctx, 'boss/0', 0, 22));
+        return picto(ctx, 'slime', x, y, 16);
+      case 'brick': return picto(ctx, 'brick', x, y, 15);
+      default: return picto(ctx, k, x, y, 15, '#ffffff');
+    }
+  }
+
   // ===================== HUD =====================
   drawHUD(ctx, game, app) {
     const s = app.session;
@@ -548,7 +565,7 @@ export class Renderer {
     const b = game.boss;
     if (b && b.state !== 'sleep' && !b.dead) {
       const bx = this.viewW / 2;
-      text('キングスライム', bx - 42, y + 16, '#ffd6ff');
+      this.drawToken(ctx, 'boss', bx + 20, y + 16, game.time);
       for (let i = 0; i < b.maxHp; i++) S.drawHeart(ctx, bx + 36 + i * 11, y + 16, 0, i < b.hp ? 0.7 : 0.35);
     }
     // ステージ名（ふりがなつき）
@@ -559,10 +576,19 @@ export class Renderer {
       ctx.globalAlpha = Math.max(0, a);
       ctx.textAlign = 'center';
       ctx.font = `bold 10px ${FONT}`;
-      const tw = ctx.measureText(m.text).width + 28;
-      ctx.fillStyle = 'rgba(20,24,48,0.6)';
-      S.rr(ctx, this.viewW / 2 - tw / 2, 44, tw, 20, 10); ctx.fill();
-      text(m.text, this.viewW / 2, 54.5, m.color);
+      if (Array.isArray(m.text)) {
+        // 絵記号のならび（文字のかわり）。わくの色でどのお知らせかを分ける
+        const G = 20, tw = m.text.length * G + 14, x0 = this.viewW / 2 - tw / 2;
+        ctx.fillStyle = 'rgba(20,24,48,0.62)';
+        S.rr(ctx, x0, 42, tw, 24, 12); ctx.fill();
+        ctx.strokeStyle = m.color; ctx.lineWidth = 1.2; S.rr(ctx, x0, 42, tw, 24, 12); ctx.stroke();
+        m.text.forEach((k, i) => this.drawToken(ctx, k, x0 + 7 + G / 2 + i * G, 54, game.time));
+      } else {
+        const tw = ctx.measureText(m.text).width + 28;
+        ctx.fillStyle = 'rgba(20,24,48,0.6)';
+        S.rr(ctx, this.viewW / 2 - tw / 2, 44, tw, 20, 10); ctx.fill();
+        text(m.text, this.viewW / 2, 54.5, m.color);
+      }
       ctx.globalAlpha = 1;
       ctx.textAlign = 'left';
     }
@@ -573,7 +599,7 @@ export class Renderer {
       const cx = this.viewW / 2, cy = 86;
       const name = game.def.name;
       ctx.font = `bold 16px ${FONT}`;
-      const tw = Math.max(170, ctx.measureText(name).width + 44);
+      const tw = Math.max(190, ctx.measureText(name).width + 84);
       ctx.fillStyle = 'rgba(28,48,84,0.28)';
       S.rr(ctx, cx - tw / 2, cy - 24 + 2.5, tw, 50, 14); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.96)';
@@ -586,6 +612,9 @@ export class Renderer {
       ctx.fillStyle = '#ffffff'; ctx.fillText('ステージ ' + game.def.id, cx, cy - 24.2);
       ctx.font = `bold 16px ${FONT}`;
       ctx.fillStyle = '#35304a'; ctx.fillText(name, cx, cy + 1);
+      // その場所の目じるし（左右に）
+      const mark = STAGE_MARK[game.def.id];
+      if (mark) { const nw = ctx.measureText(name).width; for (const sx of [-1, 1]) picto(ctx, mark, cx + sx * (Math.max(tw / 2 - 18, nw / 2 + 14)), cy + 5, 20, '#2fb5ad'); }
       if (game.def.kana) {
         ctx.font = `bold 7px ${FONT}`;
         ctx.fillStyle = '#8a84a0'; ctx.fillText(game.def.kana, cx, cy + 15);

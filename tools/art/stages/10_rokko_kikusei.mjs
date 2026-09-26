@@ -194,6 +194,11 @@ bgLayer('kikusei', { f: 0.008, w: 1400, y: 0, h: 150 }, (defs, w) => {
   return out.join('');
 });
 const KHZ = 60;
+// 掬星台から見える神戸の目じるし（ボスの広場で見える x=70〜590 の中に置く）
+//   左：人工島（ポートアイランド・神戸空港）、まん中：ポートタワーとハーバーランドの観覧車、右：明石海峡大橋
+const K_ISLANDS = [[150, 280, 72], [290, 370, 67], [60, 130, 74]];
+const K_TOWER = 400, K_WHEEL = 372, K_BRIDGE = 470, K_BRIDGE_W = 120;
+const kBridgeY = (u) => KHZ + 3 - (u < 0.2 ? u / 0.2 * 9 : u > 0.8 ? (1 - u) / 0.2 * 9 : 9 - Math.sin((u - 0.2) / 0.6 * Math.PI) * 7);
 const kShore = (x, w) => 80 + 2.4 * Math.sin(x / w * TAU * 3 + 2) + 1.2 * Math.sin(x / w * TAU * 9);
 bgLayer('kikusei', { f: 0.025, w: 1600, y: 30, h: 210 }, (defs, w) => {
   const r = rng(11201), out = [];
@@ -204,7 +209,7 @@ bgLayer('kikusei', { f: 0.025, w: 1600, y: 30, h: 210 }, (defs, w) => {
   // 湾
   out.push(rect(0, KHZ + 2, w, 240 - KHZ, defs.linU([[0, '#1a2862'], [1, '#0f1946']], 0, KHZ, 0, 96)));
   // 人工島（ポートアイランド・神戸空港）
-  for (const [x0, x1, y] of [[520, 680, 72], [700, 820, 67], [980, 1080, 74]]) out.push(path(`M${x0} ${y + 2} L${x0 + 5} ${y} L${x1 - 4} ${y} L${x1} ${y + 2} Z`, '#161f4e'));
+  for (const [x0, x1, y] of K_ISLANDS) out.push(path(`M${x0} ${y + 2} L${x0 + 5} ${y} L${x1 - 4} ${y} L${x1} ${y + 2} Z`, '#161f4e'));
   // 陸
   let d = `M0 240 L0 ${f(kShore(0, w))}`;
   for (let x = 0; x <= w; x += 8) d += ` L${x} ${f(kShore(x, w))}`;
@@ -213,6 +218,13 @@ bgLayer('kikusei', { f: 0.025, w: 1600, y: 30, h: 210 }, (defs, w) => {
   const few = [];
   for (let i = 0; i < 200; i++) { const x = r() * w, y = kShore(x, w) + 2 + Math.pow(r(), 0.8) * 150; few.push([x, y, 0.8 + r() * 0.8]); }
   out.push(dots(few, '#ffd98a', { opacity: 0.85 }));
+  // 明かりが消えていても分かる、目じるしのかげ（ポートタワー・観覧車・明石海峡大橋）
+  out.push(g(portTowerFar(K_TOWER, kShore(K_TOWER, w) + 0.5, 0.42, false), { opacity: 0.55 }));
+  const wy0 = kShore(K_WHEEL, w) - 7;
+  out.push(circ(K_WHEEL, wy0, 6.5, 'none', { stroke: '#4a5a9a', strokeWidth: 0.8 }), path(`M${K_WHEEL - 4} ${wy0 + 8} L${K_WHEEL} ${wy0} L${K_WHEEL + 4} ${wy0 + 8}`, 'none', st('#4a5a9a', 0.7)));
+  const bpts = []; for (let i = 0; i <= 30; i++) { const u = i / 30; bpts.push(`${f(K_BRIDGE + u * K_BRIDGE_W)} ${f(kBridgeY(u))}`); }
+  out.push(path('M' + bpts.join(' L'), 'none', st('#4a5a9a', 0.7)), rect(K_BRIDGE, KHZ + 3, K_BRIDGE_W, 0.9, '#3a4a88'));
+  for (const u of [0.2, 0.8]) out.push(rect(K_BRIDGE + u * K_BRIDGE_W - 0.6, KHZ - 9, 1.4, 12, '#5a6aa8'));
   return tr(0, -30, out.join(''));
 });
 bgLayer('kikusei', { f: 0.025, w: 1600, y: 30, h: 210, dim: true }, (defs, w) => {
@@ -222,16 +234,16 @@ bgLayer('kikusei', { f: 0.025, w: 1600, y: 30, h: 210, dim: true }, (defs, w) =>
   for (let i = 0; i < 260; i++) far.push([r() * w, KHZ - 1 + r() * 3, 0.5 + r() * 0.4]);
   out.push(dots(far, '#ffe2a8', { opacity: 0.8 }));
   // 島の明かり（空港の滑走路の光の列）
-  for (const [x0, x1, y] of [[520, 680, 72], [700, 820, 67], [980, 1080, 74]]) { const pts = []; for (let x = x0 + 4; x < x1 - 4; x += 2.4) pts.push([x, y - 0.4 + (r() < 0.3 ? -1.6 * r() : 0), 0.7]); out.push(dots(pts, r() < 0.5 ? '#fff4dc' : '#ffd98a')); }
+  for (const [x0, x1, y] of K_ISLANDS) { const pts = []; for (let x = x0 + 4; x < x1 - 4; x += 2.4) pts.push([x, y - 0.4 + (r() < 0.3 ? -1.6 * r() : 0), 0.7]); out.push(dots(pts, r() < 0.5 ? '#fff4dc' : '#ffd98a')); }
   out.push(cityLights(defs, w, x => kShore(x, w), 134, 11303, 4600, { roads: 3, clusters: 60, grow: 0.8 }));
   // ポートタワー・観覧車（光る）
-  out.push(portTowerFar(620, kShore(620, w) + 0.5, 0.42, true));
-  const wx = 580, wy = kShore(580, w) - 7;
+  out.push(portTowerFar(K_TOWER, kShore(K_TOWER, w) + 0.5, 0.42, true));
+  const wx = K_WHEEL, wy = kShore(K_WHEEL, w) - 7;
   out.push(circ(wx, wy, 6.5, 'none', { stroke: '#9fd8ff', strokeWidth: 0.7 }), ...[0, 1, 2, 3, 4, 5, 6, 7].map(k => circ(wx + Math.cos(k / 8 * TAU) * 6.5, wy + Math.sin(k / 8 * TAU) * 6.5, 0.6, k % 2 ? '#ff9ab8' : '#ffe9a8')));
   // 明石海峡大橋（光の首かざり）
-  const bx = 1250, by = KHZ + 3;
-  for (let i = 0; i <= 40; i++) { const u = i / 40, x = bx + u * 200, y = by - (u < 0.2 ? u / 0.2 * 9 : u > 0.8 ? (1 - u) / 0.2 * 9 : 9 - Math.sin((u - 0.2) / 0.6 * Math.PI) * 7); out.push(circ(x, y, 0.55, i % 5 ? '#bfe6ff' : '#ffffff')); }
-  out.push(rect(bx + 38, by - 12, 1.2, 12, '#9fb6e8'), rect(bx + 160, by - 12, 1.2, 12, '#9fb6e8'), circ(bx + 38.6, by - 12.5, 0.8, '#ff5a4a'), circ(bx + 160.6, by - 12.5, 0.8, '#ff5a4a'));
+  const bx = K_BRIDGE, by = KHZ + 3, bw = K_BRIDGE_W;
+  for (let i = 0; i <= 40; i++) { const u = i / 40; out.push(circ(bx + u * bw, kBridgeY(u), 0.55, i % 5 ? '#bfe6ff' : '#ffffff')); }
+  for (const u of [0.2, 0.8]) out.push(rect(bx + u * bw - 0.6, by - 12, 1.2, 12, '#9fb6e8'), circ(bx + u * bw, by - 12.5, 0.8, '#ff5a4a'));
   // 水面にうつる光
   for (let i = 0; i < 50; i++) { const x = r() * w, y = KHZ + 4 + r() * 16; out.push(rrect(x, y, 3 + r() * 8, 0.5, 0.25, r() < 0.6 ? '#ffd98a' : '#9fd8ff', { opacity: 0.3 + r() * 0.3 })); }
   return tr(0, -30, out.join(''));

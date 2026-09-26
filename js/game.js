@@ -73,7 +73,7 @@ export class Game {
       this.assist = true;
     }
     this.message = null;
-    if (this.assist) this.say('おたすけ！ 金のリンゴを もらったよ', 3.2);
+    if (this.assist) this.say(['rin', 'plus', 'apple'], 3.2);
     this.state = this.demo ? 'demo' : 'play';
     this.stateT = 0;
     this.time = 0;
@@ -147,7 +147,7 @@ export class Game {
         c.active = true;
         this.checkpointIdx = Math.max(this.checkpointIdx, c.idx);
         if (this.app) this.app.failStreak = 0;
-        this.popup('中間ポイント！', c.x + 4, c.y - 6);
+        this.popup('', c.x + 4, c.y - 6, { icon: 'flag' });
         this.sfx('check');
         this.sparkle(c.x + 10, c.y + 6, 8);
       }
@@ -267,7 +267,7 @@ export class Game {
               p.vy = -(input.jump ? PHYS.stompBounceHold : PHYS.stompBounce);
               this.hitStop(0.05);
               this.enemyCoin(e);
-              if (p.combo >= 2) this.popup(p.combo + 'れんぞく！', e.cx, e.y - 10);
+              if (p.combo >= 2) this.popup('×' + p.combo, e.cx, e.y - 10, { icon: 'star', color: '#ffe066' });
             }
             p.sq = -0.22;
             p.jumping = !!input.jump;
@@ -296,7 +296,7 @@ export class Game {
     const p = this.player;
     e.remove = true;
     if (e.kind === 'apple') {
-      if (!p.powered) { p.powered = true; p.powerFlash = 0.8; this.say('パワーアップ！ 1回ぶつかっても平気・レンガもわれる', 2.8, '#ffe066'); }
+      if (!p.powered) { p.powered = true; p.powerFlash = 0.8; this.say(['apple', 'arrowR', 'brick'], 2.8, '#ffe066'); }
       this.sfx('power');
       this.addScore(1000, e.cx, e.y);
       this.sparkle(p.cx, p.y + 6, 10);
@@ -307,10 +307,10 @@ export class Game {
       this.sfx('power');
       this.addScore(1000, e.cx, e.y);
       this.sparkle(p.cx, p.y + 12, 10);
-      this.say('ジャンプぐつ！ 空中でもう1回ジャンプできるよ', 3, '#9ad7ff');
+      this.say(['boots', 'arrowR', 'arrowU', 'arrowU'], 3, '#9ad7ff');
     } else if (e.kind === 'star') {
       p.star = STAR_TIME;
-      this.say('むてき！ 体当たりで 敵をたおせる', 2.5, '#ffd6ff');
+      this.say(['istar', 'arrowR', 'slime'], 2.5, '#ffd6ff');
       this.sfx('power');
       this.addScore(1000, e.cx, e.y);
       this.starMusic = true;
@@ -462,7 +462,7 @@ export class Game {
     this.sfx('oneup');
     this.popup('1UP', x, y);
   }
-  popup(text, x, y) { this.particles.push({ type: 'text', text, x, y, vy: -30, life: 0.9, max: 0.9 }); }
+  popup(text, x, y, o = {}) { this.particles.push({ type: 'text', text, x, y, vy: -30, life: o.icon ? 1.2 : 0.9, max: o.icon ? 1.2 : 0.9, ...o }); }
   sparkle(x, y, n = 5) {
     for (let i = 0; i < n; i++) {
       this.particles.push({ type: 'spark', x, y, vx: rand(-70, 70), vy: rand(-90, 20), life: 0.5, max: 0.5, hue: 48 });
@@ -556,7 +556,7 @@ export class Game {
   // ===================== ボス =====================
   onBossWake() {
     this.bossMusic = true;
-    this.say('キングスライムが あらわれた！ 上からふもう', 3, '#ffd6ff');
+    this.say(['boss', 'arrowL', 'rin', 'arrowD'], 3, '#ffd6ff');
     if (!this.starMusic) this.app.sound.playBgm('boss');
   }
   onBossDying(b) {

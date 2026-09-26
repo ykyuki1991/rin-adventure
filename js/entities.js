@@ -223,7 +223,7 @@ export class Boss extends Enemy {
     game.sfx('bossHit');
     game.shake(0.3);
     game.hitStop(0.16);
-    if (this.hp > 0) game.popup(this.hp === 2 ? 'あと2回！' : 'あと1回！', this.cx, this.y - 6);
+    if (this.hp > 0) game.popup('', this.cx, this.y - 6, { hearts: this.hp });
     if (this.hp <= 0) {
       this.dead = true; this.flipped = true;
       this.vy = -320; this.vx = 0;

@@ -36,8 +36,10 @@ const sign = (ctx, str, x, y, size, color, stroke) => text(ctx, str, x, y, size,
 // 入り口の門
 DECOS.s2_gate = (ctx, d, x, y) => {
   if (!Art.draw(ctx, 's2/gate', x, y)) return;
-  sign(ctx, d.text || '王子動物園', x + 64.6, y - 95.6, 10.5, '#2f7a33');
-  sign(ctx, 'おうじどうぶつえん', x + 64.6, y - 87.2, 4, '#4f8a45');
+  // 看板：キリン・パンダ・ゾウ（王子動物園の人気もの）
+  sign(ctx, 'キリン', x + 44.6, y - 92.5, 8.2, '#c98a2a');
+  sign(ctx, d.text || '王子動物園', x + 64.6, y - 92.5, 10, '#2f7a33');
+  sign(ctx, 'ゾウ', x + 84.6, y - 92.5, 8.2, '#6f7f96');
 };
 DECOS.s2_sakura = (ctx, d, x, y) => { const k = d.s || 1; Art.draw(ctx, 's2/sakura', x + 8, y, !!d.flip, k, k); };
 DECOS.s2_tree = (ctx, d, x, y) => { const k = d.s || 1; Art.draw(ctx, 's2/tree', x + 8, y, !!d.flip, k, k); };
