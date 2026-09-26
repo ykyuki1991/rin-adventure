@@ -649,6 +649,56 @@ export function drawBoots(ctx, cx, cy, t) {
   ctx.fillStyle = '#ffffff'; ctx.fillRect(cx - 5, cy + 2, 11, 1.4);
 }
 
+// ジャンプ台（赤いバネ。ふまれるとちぢむ）
+export function drawSpring(ctx, e) {
+  const k = e.squash > 0 ? Math.sin(e.squash / 0.18 * Math.PI) : 0;
+  const x = e.x, bot = e.y + e.h, top = e.y + 2 + k * 5;
+  ctx.fillStyle = 'rgba(20,20,40,0.2)'; ellipse(ctx, x + 7, bot, 8, 1.6); ctx.fill();
+  ctx.fillStyle = '#5b6472'; rr(ctx, x, bot - 3, 14, 3, 1); ctx.fill();
+  // バネ
+  ctx.strokeStyle = '#8f9bb0'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  ctx.beginPath();
+  const n = 3, hgt = bot - 3 - (top + 3);
+  for (let i = 0; i <= n * 2; i++) { const yy = bot - 3 - hgt * i / (n * 2); const xx = x + (i % 2 ? 11.5 : 2.5); i ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); }
+  ctx.stroke();
+  ctx.strokeStyle = '#dfe6f0'; ctx.lineWidth = 0.6; ctx.stroke();
+  // 上の板
+  ctx.fillStyle = '#b8202a'; rr(ctx, x - 1, top, 16, 4, 1.5); ctx.fill();
+  ctx.fillStyle = '#ef4a4a'; rr(ctx, x - 1, top - 0.5, 16, 3, 1.5); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.55)'; rr(ctx, x + 1, top, 8, 1, 0.5); ctx.fill();
+  ctx.strokeStyle = 'rgba(34,26,54,0.85)'; ctx.lineWidth = 0.6; rr(ctx, x - 1, top - 0.5, 16, 4.5, 1.5); ctx.stroke();
+}
+// コインチャレンジのリング（金色の輪がくるくる回る）
+export function drawRing(ctx, e, time) {
+  const cx = e.cx, cy = e.y + 16, on = e.state === 'idle';
+  const w = Math.abs(Math.cos(time * 2.2)) * 7 + 1.2;
+  ctx.globalAlpha = on ? 1 : 0.35;
+  if (on) { const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, 16); g.addColorStop(0, 'rgba(255,220,120,0.45)'); g.addColorStop(1, 'rgba(255,220,120,0)'); ctx.fillStyle = g; ctx.fillRect(cx - 16, cy - 16, 32, 32); }
+  ctx.lineWidth = 3.2; ctx.strokeStyle = '#b87a00'; ellipse(ctx, cx, cy, w, 12); ctx.stroke();
+  ctx.lineWidth = 2; ctx.strokeStyle = '#ffd23f'; ellipse(ctx, cx, cy, w, 12); ctx.stroke();
+  ctx.lineWidth = 0.7; ctx.strokeStyle = '#fff6c9'; ellipse(ctx, cx - w * 0.2, cy - 1, w * 0.8, 10.5); ctx.stroke();
+  if (on) { ctx.fillStyle = '#ff5a5f'; starPath(ctx, cx, cy, 3.4, 1.5); ctx.fill(); }
+  ctx.globalAlpha = 1;
+}
+// 赤いコイン（コインの絵を赤く染める。できた絵はとっておく）
+const redCache = new Map();
+export function drawRedCoin(ctx, cx, cy, t, s = 1) {
+  const f = Math.floor(t * 2.2) % 6, key = 'coin/' + f;
+  if (!Art.has(key)) { ctx.fillStyle = '#e8453c'; ellipse(ctx, cx, cy, 5 * s, 6.5 * s); ctx.fill(); return; }
+  const tr = ctx.getTransform(), K = Math.max(1, Math.round(Math.hypot(tr.a, tr.b) * 2) / 2), ck = f + '@' + K;
+  let c = redCache.get(ck);
+  if (!c) {
+    const fr = Art.frame(key);
+    c = document.createElement('canvas'); c.width = Math.ceil((fr[3] + 2) * K); c.height = Math.ceil((fr[4] + 2) * K);
+    const x = c.getContext('2d'); x.scale(K, K);
+    Art.draw(x, key, fr[5] + 1, fr[6] + 1);
+    x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(232,40,60,0.62)'; x.fillRect(0, 0, fr[3] + 2, fr[4] + 2);
+    c.fr = fr; redCache.set(ck, c);
+  }
+  const fr = c.fr;
+  ctx.drawImage(c, cx - (fr[5] + 1) * s, cy - (fr[6] + 1) * s, (fr[3] + 2) * s, (fr[4] + 2) * s);
+}
+
 export function drawCoin(ctx, cx, cy, t) {
   if (Art.draw(ctx, 'coin/' + (Math.floor(t * 2.2) % 6), cx, cy)) return;
   const w = Math.abs(Math.cos(t * 3.5)) * 4.6 + 0.8;

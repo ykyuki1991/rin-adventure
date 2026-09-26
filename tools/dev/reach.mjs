@@ -5,6 +5,7 @@ import { Level } from '../../js/level.js';
 import { Player } from '../../js/player.js';
 import { TILE, T, STEP } from '../../js/config.js';
 import { zoneForce, buildZones } from '../../js/zones.js';
+import { Spring, springBounce } from '../../js/entities.js';
 
 const ONLY = process.argv[2] ? parseInt(process.argv[2]) - 1 : null;
 const VERBOSE = process.argv.includes('-v');
@@ -65,7 +66,7 @@ const PATTERNS = ['hold', 'apex', 'none', 'back'];
 const RUNS = [0, 0.12, 0.55];
 
 function makeGame(L, zones) {
-  const g = { level: L, sfx() {}, onHeadBump() {}, t: 0 };
+  const g = { level: L, sfx() {}, onHeadBump() {}, t: 0, springs: [] };
   g.forceAt = box => zones.length ? zoneForce(zones, box, g.t) : null;
   return g;
 }
@@ -95,6 +96,7 @@ function simulate(g, sx, sy, dir, runT, jump, hold, pattern, walkOnly, onStep) {
       if (pattern === 'back' && apex) h = -dir;
     }
     p.update(g, STEP, { left: h < 0, right: h > 0, jump: jh, jumpPressed: jp });
+    for (const sp of g.springs) springBounce(p, sp, jump && hold >= 0.2);
     if (onStep) onStep(p);
     if (hazard(L, p) || p.y > L.pxH) return null;
     if (!p.grounded) left = true;
@@ -113,11 +115,15 @@ function check(def) {
     if (mode === 'medals') for (let i = 0; i < L.tiles.length; i++) if (L.tiles[i] === T.HIDDEN) L.tiles[i] = T.USED;
     const zones = buildZones(def, TILE);
     const g = makeGame(L, zones);
+    g.springs = def.spawns.filter(s => s.type === 'spring').map(s => new Spring(s.x, s.base));
     const goalX = def.goal ? def.goal.x * TILE + 8 : 170 * TILE;
     const medals = def.spawns.filter(s => s.type === 'medal').map(s => ({ id: s.id, x: s.x * TILE - 2, y: s.y * TILE - 2, w: 20, h: 20 }));
     const got = new Set();
     const coinsAll = new Set(); for (let i = 0; i < L.tiles.length; i++) if (L.tiles[i] === T.COIN) coinsAll.add(i);
     const coinsGot = new Set();
+    // コインチャレンジの赤いコインも、取れる場所にあるか調べる
+    const red = new Set();
+    for (const r of def.spawns.filter(s => s.type === 'ring')) for (const [x, y] of r.coins) { const k = y * L.w + x; red.add(k); coinsAll.add(k); }
     let reached = false, farX = 0;
     const onStep = p => {
       const hb = { x: p.x + 1, y: p.y + 1, w: p.w - 2, h: p.h - 1 };

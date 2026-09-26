@@ -4,7 +4,7 @@ import { TILE, T, PHYS, STAR_TIME, BOOTS_TIME } from './config.js';
 import { Level } from './level.js';
 import { LEVELS } from './levels.js';
 import { Player } from './player.js';
-import { makeThing, PopCoin, PowerItem, Deco } from './entities.js';
+import { makeThing, PopCoin, PowerItem, Deco, springBounce, RedCoin } from './entities.js';
 import { zoneForce, buildZones } from './zones.js';
 import { boxOverlap, moveBody } from './physics.js';
 
@@ -45,6 +45,7 @@ export class Game {
     this.checkpoints = [];
     this.goal = null;
     this.boss = null;
+    this.activeRing = null;
     this.decos = (def.decos || []).map(d => new Deco(d));
     this.zones = buildZones(def, TILE);
     for (const s of def.spawns) {
@@ -218,7 +219,7 @@ export class Game {
         else continue;
       }
       const near = e.x + e.w > camL && e.x < camR;
-      if (!near && !e.dead && e.kind !== 'boss') continue; // 画面から遠い敵は止めておく
+      if (!near && !e.dead && e.kind !== 'boss' && e.kind !== 'ring') continue; // 画面から遠い敵は止めておく
       e.update(this, dt);
     }
 
@@ -288,8 +289,43 @@ export class Game {
         }
       } else if (e.isItem && !e.behind) {
         if (boxOverlap(hb, e)) this.collectItem(e);
+      } else if (e.kind === 'spring') {
+        if (springBounce(p, e, !!input.jump)) { e.squash = 0.18; this.sfx('spring'); this.dust(e.cx, e.y + 12, 3); p.sq = -0.25; }
+      } else if (e.kind === 'ring') {
+        if (e.state === 'idle' && boxOverlap(hb, e)) this.startRing(e);
+      } else if (e.kind === 'redcoin') {
+        if (boxOverlap(hb, e)) {
+          e.remove = true; e.ring.got++;
+          this.sfx('redcoin'); this.addScore(200);
+          this.popup(String(e.ring.got), e.cx, e.y, { color: '#ff8a8a' });
+          this.sparkle(e.cx, e.y + 7, 5);
+        }
       }
     }
+  }
+
+  // ===================== コインチャレンジ =====================
+  startRing(r) {
+    r.state = 'run'; r.timer = r.limit; r.got = 0;
+    r.coins.forEach(([x, y], i) => this.entities.push(new RedCoin(r, x, y, i)));
+    this.activeRing = r;
+    this.sfx('ring');
+    this.sparkle(r.cx, r.y + 16, 10);
+  }
+  // そのリングの赤いコインを片付ける（画面の外にあるものも）
+  clearRedCoins(r) { for (const e of this.entities) if (e.kind === 'redcoin' && e.ring === r) e.remove = true; }
+  onRingDone(r) {
+    this.activeRing = null;
+    this.clearRedCoins(r);
+    this.oneUp(this.player.cx, this.player.y - 6);
+    this.addScore(2000);
+    this.sfx('medal');
+    this.sparkle(this.player.cx, this.player.y + 6, 16);
+  }
+  onRingFail(r) {
+    this.activeRing = null;
+    this.clearRedCoins(r);
+    this.sfx('shrink');
   }
 
   collectItem(e) {
@@ -516,6 +552,8 @@ export class Game {
     const h = g.groundY - p.bottom;
     const sc = h > 120 ? 5000 : h > 90 ? 2000 : h > 60 ? 800 : h > 30 ? 400 : 100;
     this.addScore(sc, g.poleX + 12, p.y);
+    // 旗のてっぺんにとびついたら 1UP
+    if (p.y <= g.topY + 10) this.oneUp(g.poleX - 8, p.y - 10);
     this.app.sound.stopBgm();
     this.sfx('flag');
   }

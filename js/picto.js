@@ -387,6 +387,11 @@ const ICONS = {
     begin(); line(-7.5, 0, 7.5, 0); line(-2, -6, -2, 0); line(3.5, 0, 3.5, 6); stroke('#f4c7a1', 1);
     begin(); line(1.5, -6.5, -0.5, -2, 2, 1, -1, 6.5); stroke('#2a1a14', 1.1);
   },
+  spring() { // ジャンプ台
+    begin(); rrect(-6, 5, 12, 2.5, 1); fill('#5b6472');
+    begin(); line(-4, 5, 4, 2.5, -4, 0, 4, -2.5); stroke('#8f9bb0', 1.6);
+    begin(); rrect(-7.5, -6, 15, 3.6, 1.4); fill('#ef4a4a');
+  },
   // ---- ヒント用 ----
   arrowR(k) { begin(); line(-6, 0, 3, 0); stroke(k, 2); arrowHead(3, 0, 1, 0, 4, k); },
   arrowL(k) { begin(); line(6, 0, -3, 0); stroke(k, 2); arrowHead(-3, 0, -1, 0, 4, k); },

@@ -536,6 +536,49 @@ export class PowerItem extends Entity {
   }
 }
 
+// ジャンプ台（上に乗るとはね上がる。ジャンプボタンを押していると大ジャンプ）
+export const SPRING = { vy: 470, vyHold: 610, boost: 0.28 };
+export class Spring extends Entity {
+  constructor(tx, base) { super('spring', tx * TILE + 1, base * TILE - 12, 14, 12); this.squash = 0; }
+  update(game, dt) { this.t += dt; if (this.squash > 0) this.squash -= dt; }
+}
+// りんがジャンプ台にのったか（ゲームと到達チェックの両方で使う）。はねたら true
+export function springBounce(p, sp, hold) {
+  if (p.vy <= 0) return false;
+  if (p.x + p.w <= sp.x + 1 || p.x >= sp.x + sp.w - 1) return false;
+  const top = sp.y + 2;
+  if (p.prevBottom > top + 4 || p.y + p.h < top) return false;
+  p.y = top - p.h;
+  p.vy = -(hold ? SPRING.vyHold : SPRING.vy);
+  p.springT = SPRING.boost;
+  p.grounded = false; p.jumping = true; p.airJumps = 1; p.riding = null;
+  return true;
+}
+
+// コインチャレンジ：リングにさわると赤いコインが出る。時間内に全部取ると 1UP
+export class Ring extends Entity {
+  constructor(s) {
+    super('ring', s.x * TILE, (s.y - 1) * TILE, 16, 32);
+    this.coins = s.coins; this.limit = s.limit || 10;
+    this.state = 'idle'; this.timer = 0; this.got = 0;
+  }
+  update(game, dt) {
+    this.t += dt;
+    if (this.state === 'run') {
+      this.timer -= dt;
+      if (this.got >= this.coins.length) { this.state = 'done'; game.onRingDone(this); }
+      else if (this.timer <= 0) { this.state = 'cool'; this.timer = 1.2; game.onRingFail(this); }
+    } else if (this.state === 'cool') {
+      this.timer -= dt;
+      if (this.timer <= 0) this.state = 'idle';
+    }
+  }
+}
+export class RedCoin extends Entity {
+  constructor(ring, tx, ty, i) { super('redcoin', tx * TILE + 2, ty * TILE + 1, 12, 14); this.ring = ring; this.i = i; }
+  update(game, dt) { this.t += dt; if (this.ring.state !== 'run') this.remove = true; }
+}
+
 // ひみつのメダル
 export class Medal extends Entity {
   constructor(tx, ty, id) {
@@ -699,6 +742,8 @@ export function makeThing(s) {
     case 'checkpoint': return new Checkpoint(s.x, s.y, s.idx);
     case 'goal': return new Goal(s.x, s.base, s.label);
     case 'platform': return new Platform(s);
+    case 'spring': return new Spring(s.x, s.base);
+    case 'ring': return new Ring(s);
   }
   return makeEnemy(s);
 }

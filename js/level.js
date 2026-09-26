@@ -296,6 +296,10 @@ export class LevelBuilder {
     return this;
   }
   start(x, y = 12) { this.startPos = { x, y }; return this; }
+  // ジャンプ台（x マス目、base は乗っている地面の高さ）
+  spring(x, base = 13) { this.spawns.push({ type: 'spring', x, base }); return this; }
+  // コインチャレンジ：リング（x, y）と、出てくる赤コインの場所 [[x, y], ...]（8まい）。limit 秒以内に全部取ると 1UP
+  ring(x, y, coins, limit = 10) { this.spawns.push({ type: 'ring', x, y, coins, limit }); return this; }
 
   build() {
     return {
