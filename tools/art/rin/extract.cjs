@@ -146,6 +146,8 @@ async function save(name, img, frames, opt = {}) {
   // 書き出す大きさ
   const k = SCALE * RES, W = Math.round(img.w * k), H = Math.round(img.h * k);
   const file = name.replace('/', '_') + '.png';
+  // HIRES=<フォルダ> を指定すると、キャラ表と同じ大きさの絵も書き出す（アプリのアイコン用）
+  if (process.env.HIRES) { fs.mkdirSync(process.env.HIRES, { recursive: true }); await sharp(img.d, { raw: { width: img.w, height: img.h, channels: 4 } }).png().toFile(path.join(process.env.HIRES, file)); }
   await sharp(img.d, { raw: { width: img.w, height: img.h, channels: 4 } }).resize(W, H, { kernel: 'lanczos3' }).png({ compressionLevel: 9 }).toFile(path.join(OUT, file));
   frames[name] = { file, w: +(W / RES).toFixed(3), h: +(H / RES).toFixed(3), ax: +(ax * SCALE).toFixed(3), ay: +(ay * SCALE).toFixed(3) };
 }
