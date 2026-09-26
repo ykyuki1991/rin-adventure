@@ -196,18 +196,13 @@ sprite('chars', 'rin/dead', W, H, AX, AY, defs => tr(AX, AY, [
 sprite('chars', 'rin/icon', 16, 15, 8, 7.5, defs => tr(7.2, 20, head(defs, 'smile', 'normal'), 0.1));
 
 // ========================================================================
-// キャラ表から切り出した絵（tools/art/rin/extract.cjs で作る）があれば、りん はそちらを使う
-// 上の SVG の りん は、切り出した絵がないときの予備
+// キャラ表から切り出した絵（tools/art/rin/extract.cjs が art/rin.png と frames.json を作る）があれば、
+// りん はそちらを使う（build.mjs が FRAMES に入れる）。上の SVG の りん は、切り出した絵がないときの予備
 // ========================================================================
 {
-  const dir = join(dirname(fileURLToPath(import.meta.url)), 'rin');
-  const meta = join(dir, 'frames.json');
+  const meta = join(dirname(fileURLToPath(import.meta.url)), 'rin', 'frames.json');
   if (existsSync(meta)) {
-    const frames = JSON.parse(readFileSync(meta, 'utf8'));
-    dropSprites(n => /^rinP?\//.test(n));
-    for (const [name, fr] of Object.entries(frames)) {
-      const b64 = readFileSync(join(dir, 'frames', fr.file)).toString('base64');
-      sprite('rin', name, fr.w, fr.h, fr.ax, fr.ay, () => `<image x="0" y="0" width="${fr.w}" height="${fr.h}" preserveAspectRatio="none" href="data:image/png;base64,${b64}"/>`);
-    }
+    const names = new Set(Object.keys(JSON.parse(readFileSync(meta, 'utf8')).frames));
+    dropSprites(n => names.has(n));
   }
 }

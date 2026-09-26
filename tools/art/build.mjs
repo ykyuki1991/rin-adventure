@@ -1,6 +1,6 @@
 // 絵の書き出し: node tools/art/build.mjs
 // art/*.svg（絵のシート）と js/art-data.js（どの絵がシートのどこにあるか）を作ります
-import { writeFileSync, readFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdirSync, readdirSync, unlinkSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Defs, f } from './svg.mjs';
@@ -57,6 +57,16 @@ for (const [name, list] of Object.entries(sheets)) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SHEET_W} ${H}" width="${SHEET_W}" height="${H}">${defs.svg()}${parts.join('\n')}</svg>`;
   writeFileSync(join(OUT, name + '.svg'), svg);
   sheetInfo[name] = { file: `art/${name}.svg`, w: SHEET_W, h: H };
+}
+
+// 画像（PNG）のシート：キャラ表から切り出した りん（tools/art/rin/extract.cjs で作る）
+{
+  const meta = join(ROOT, 'tools', 'art', 'rin', 'frames.json');
+  if (existsSync(meta)) {
+    const { sheet, frames: fr } = JSON.parse(readFileSync(meta, 'utf8'));
+    sheetInfo.rin = { ...sheet, png: true };
+    for (const [n, v] of Object.entries(fr)) frames[n] = ['rin', v.sx, v.sy, v.w, v.h, v.ax, v.ay];
+  }
 }
 
 // 背景（層ごとに1枚）

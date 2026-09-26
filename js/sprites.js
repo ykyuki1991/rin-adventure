@@ -642,7 +642,11 @@ export function drawWave(ctx, e, time) {
 export function drawBoots(ctx, cx, cy, t) {
   const s = 1 + Math.sin(t * 6) * 0.05;
   if (Art.draw(ctx, 'boots', cx, cy, false, s, s)) return;
-  ctx.fillStyle = '#ef4a3e'; ctx.fillRect(cx - 6, cy - 4, 12, 8);
+  // 予備の絵：羽のついた赤いくつ
+  ctx.fillStyle = '#ffffff'; ellipse(ctx, cx - 5, cy - 3, 3.2, 1.8, -0.5); ctx.fill();
+  ctx.fillStyle = '#ef4a3e';
+  ctx.beginPath(); ctx.moveTo(cx - 5, cy - 4); ctx.lineTo(cx - 1, cy - 4); ctx.lineTo(cx, cy - 0.5); ctx.quadraticCurveTo(cx + 6, cy - 0.5, cx + 6, cy + 3); ctx.lineTo(cx - 5, cy + 3); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(cx - 5, cy + 2, 11, 1.4);
 }
 
 export function drawCoin(ctx, cx, cy, t) {

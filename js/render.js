@@ -93,8 +93,11 @@ export class Renderer {
     ctx.scale(size / TILE, size / TILE);
     // SVGの絵があればそれを重ねて描く（なければこれまでの絵）
     const layers = Art.ready ? tileArt(theme, key) : null;
-    if (layers) for (const nm of layers) { if (Array.isArray(nm)) Art.draw(ctx, nm[0], nm[1], nm[2]); else Art.drawTile(ctx, nm); }
+    let done = true;
+    if (layers) for (const nm of layers) { if (!(Array.isArray(nm) ? Art.draw(ctx, nm[0], nm[1], nm[2]) : Art.drawTile(ctx, nm))) done = false; }
     else paintTile(ctx, THEMES[theme], key.split(':')[0]);
+    // 絵がまだ読みこめていないときは、とりあえずプログラムの絵で描く（絵がそろうと Art.version が上がって作り直される）
+    if (!done) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, size, size); ctx.scale(size / TILE, size / TILE); paintTile(ctx, THEMES[theme], key.split(':')[0]); }
     this.tileCache.set(ck, c);
     return c;
   }

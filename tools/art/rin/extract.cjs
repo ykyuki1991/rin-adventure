@@ -206,6 +206,20 @@ async function save(name, img, frames, opt = {}) {
     await sharp(img.d, { raw: { width: img.w, height: img.h, channels: 4 } }).resize(W, H, { kernel: 'lanczos3' }).png({ compressionLevel: 9 }).toFile(path.join(OUT, 'rin_icon.png'));
     frames['rin/icon'] = { file: 'rin_icon.png', w: +(W / RES).toFixed(3), h: +(H / RES).toFixed(3), ax: +(cx * k).toFixed(3), ay: +(cy * k).toFixed(3) };
   }
-  fs.writeFileSync(path.join(DIR, 'frames.json'), JSON.stringify(frames, null, 1));
+  // 1まいの画像（art/rin.png）にならべる。frames.json にはシートの中の位置（ゲームの1ドット単位）を書く
+  const list = Object.entries(frames), metas = [];
+  for (const [name, fr] of list) metas.push({ name, fr, meta: await sharp(path.join(OUT, fr.file)).metadata() });
+  metas.sort((a, b) => b.meta.height - a.meta.height);
+  const SW = 512 * RES, PAD = 3 * RES;
+  let x = PAD, y = PAD, rowH = 0; const comp = [];
+  for (const m of metas) {
+    if (x + m.meta.width + PAD > SW) { x = PAD; y += rowH + PAD; rowH = 0; }
+    comp.push({ input: path.join(OUT, m.fr.file), left: x, top: y });
+    m.fr.sx = +(x / RES).toFixed(3); m.fr.sy = +(y / RES).toFixed(3);
+    x += m.meta.width + PAD; rowH = Math.max(rowH, m.meta.height);
+  }
+  const SH = Math.ceil((y + rowH + PAD) / RES) * RES;
+  await sharp({ create: { width: SW, height: SH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite(comp).png({ compressionLevel: 9, palette: false }).toFile(path.join(DIR, '..', '..', '..', 'art', 'rin.png'));
+  fs.writeFileSync(path.join(DIR, 'frames.json'), JSON.stringify({ sheet: { file: 'art/rin.png', w: 512, h: SH / RES }, frames }, null, 1));
   console.log(Object.keys(frames).length, 'frames');
 })();
