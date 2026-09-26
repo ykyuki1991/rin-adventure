@@ -77,8 +77,8 @@
 <!-- ステージを選ぶ（神戸の地図） -->
 <section id="scr-select" class="screen select-screen hidden">
   <div class="select-head">
-    <div class="btn small" id="btnSelBack">もどる</div>
-    <h2>冒険する場所を選ぼう</h2>
+    <div class="btn small" id="btnSelBack">‹ もどる</div>
+    <div class="wood-sign"><div class="ws-title">ぼうけんマップ<span class="ws-flag"></span></div><div class="ws-sub">神戸を めぐる たのしい たびに でかけよう！</div></div>
     <div class="medal-total" id="medalTotal"></div>
   </div>
   <div class="map-wrap">
@@ -87,10 +87,12 @@
       <div class="si-no" id="siNo"></div>
       <div class="si-name" id="siName"></div>
       <div class="si-kana" id="siKana"></div>
+      <canvas id="siThumb" class="si-thumb" width="320" height="180"></canvas>
+      <div class="si-desc" id="siDesc"></div>
       <div class="si-medals medals" id="siMedals"></div>
       <div class="si-hints" id="siHints"></div>
       <div class="si-best" id="siBest"></div>
-      <div class="btn" id="btnGo">出発！</div>
+      <div class="si-go-row"><div class="btn go" id="btnGo">出発！<span class="go-arrow">›</span></div><canvas id="siRin" class="si-rin" width="96" height="96"></canvas></div>
     </div>
   </div>
 </section>

@@ -4,6 +4,7 @@ import { rr, starPath } from './sprites.js';
 import { portTower, ferris } from './themes.js';
 import { zoneActive, windDir } from './zones.js';
 import { Art } from './art.js';
+import { SD } from './sd/index.js';
 
 const TAU = Math.PI * 2;
 const circle = (ctx, x, y, r) => { ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); };
@@ -39,6 +40,9 @@ function drawHint(ctx, d, time) {
 export function drawDeco(ctx, d, theme, time, night) {
   const x = d.x, y = d.y; // y はその飾りの足元（地面）の高さ
   if (d.type === 'hint') return drawHint(ctx, d, time);
+  // ステージごとの飾り（js/sd/stageN.js）
+  const sd = SD[d.type];
+  if (sd) { if (Art.ready) sd(ctx, d, x, y, time, night); return; }
   if (Art.ready && drawDecoArt(ctx, d, x, y, time, night)) return;
   switch (d.type) {
     case 'sign': return drawSign(ctx, d, night);
@@ -723,6 +727,9 @@ export function drawPlatformLook(ctx, pf, theme, time, night) {
   let x = pf.x, y = pf.y;
   const w = pf.w;
   if (pf.move === 'fall' && pf.touched && !pf.falling) x += Math.sin(time * 70) * 0.7;
+  // ステージごとの乗り物の絵（js/sd/stageN.js の DECOS['pf_<look>']）。false を返すとこれまでの絵
+  const sdp = SD['pf_' + pf.look];
+  if (sdp && Art.ready && sdp(ctx, pf, x, y, w, time, night) !== false) return;
   if (Art.ready) {
     if (pf.look === 'train' && Art.draw(ctx, 'pf/train', x, y, false, w / 80, 1)) return;
     if (pf.look === 'ship' && Art.draw(ctx, 'pf/ship', x, y, false, w / 96, 1)) return;

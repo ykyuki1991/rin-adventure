@@ -170,7 +170,14 @@ b.goal(180, 13);                              // ゴール
 
 ### 絵を直すとき
 
-1. SVG は `tools/art/` の中のプログラム（chars.mjs・enemies.mjs・enemies2.mjs・items.mjs・tiles.mjs・tiles2.mjs・decos.mjs・decos2.mjs・bgs.mjs・bgs2.mjs・yakumo.mjs・yakumo2.mjs）から作っています。ステージ1（八雲通・春日野道）の背景・地面は yakumo.mjs、店・アーケード・街灯・家などの飾りは yakumo2.mjs です
+1. SVG は `tools/art/` の中のプログラムから作っています
+   - キャラクター・敵・アイテム: chars.mjs・enemies.mjs・enemies2.mjs・items.mjs
+   - ステージ1（八雲通・春日野道）: 背景と地面は yakumo.mjs、店・アーケード・街灯・家などの飾りは yakumo2.mjs
+   - ステージ2〜10: `tools/art/stages/02_zoo.mjs` 〜 `10_rokko_kikusei.mjs`（build.mjs が自動で全部読みこみます。先頭の `resetTheme()` で古い絵を消して描き直しています）
+   - ステージ選択の地図: map.mjs（`art/map.svg`）
+   - 窓・ひさし・看板・れんが・瓦屋根・葉っぱなど共通の部品: kit.mjs
+   - ステージごとの飾りの動き（ゲームの中で描く部分）は `js/sd/stage2.js` 〜 `stage10.js`
+   - ステージ2〜10の絵は、そのステージを遊ぶときだけ読みこみます（iPhone のメモリを節約するため）
 2. 直したら、次のコマンドで `art/*.svg` と `js/art-data.js` を作り直す（`sw.js` のファイル一覧も自動で直ります）
 
 ```sh
@@ -179,6 +186,13 @@ node tools/art/build.mjs
 
 - 書き出した `art/*.svg` は Penpot や Inkscape でそのまま開いて確認・修正できます（ただし上のコマンドを実行すると上書きされます）
 - `node tools/art/preview.mjs 出力.png 8 "#dfe6ee" rin/` のようにすると、絵を大きくして並べた確認用の画像を作れます（sharp が必要）
+- `node tools/dev/shot.js --port 8765 --stages 5 --at 0.1,0.5,0.9 --out /tmp/shots --grid /tmp/grid.png` でステージの画面を撮れます（playwright が必要。先に `python3 -m http.server 8765` を動かす）
+- `node tools/dev/reach.mjs 5` で、そのステージがクリアできるか・メダルとコインが全部取れるかを調べられます
+
+### 見やすさのくふう
+
+- キャラクター・敵・アイテム・乗り物には、自動で細いふちどりがつきます（js/art.js）
+- 足場の空気にふれている辺には細い線が引かれ、背景と飾りは少しかすませています（js/render.js。かすみの強さはテーマごとに `wash` で変えられます）
 
 ## 次のステップ
 

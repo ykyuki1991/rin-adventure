@@ -7,6 +7,9 @@ import { drawDeco, drawPlatformLook, drawZone, drawGoal } from './decos.js';
 import { zoneActive, windDir } from './zones.js';
 import { Art } from './art.js';
 import { tileArt } from './tileart.js';
+import { applyStagePatches } from './sd/index.js';
+
+applyStagePatches(THEMES, BG);
 
 const VARIANT_MATS = new Set(['container', 'parasol']);
 const FONT = '"Hiragino Maru Gothic ProN", "Hiragino Sans", "Arial Rounded MT Bold", sans-serif';
@@ -183,6 +186,39 @@ export class Renderer {
         ctx.drawImage(img, x0, y0, x1 - x0, y1 - y0);
       }
     }
+    this.drawTileEdges(L, camX, tx0, tx1);
+  }
+
+  // 足場のふち（空気にふれている辺）に細い線を引いて、背景と見分けやすくする
+  drawTileEdges(L, camX, tx0, tx1) {
+    const ctx = this.ctx, K = this.K;
+    const EDGE = new Set([T.GROUND, T.FAKEG, T.HARD, T.FAKE, T.PIPE]);
+    const block = t => EDGE.has(t) || t === T.BRICK || t === T.QBLOCK || t === T.USED || t === T.ISOLID || isSlope(t);
+    const SL = { [T.SLOPE_R]: [16, 0], [T.SLOPE_L]: [0, 16], [T.SLOPE_R1]: [16, 8], [T.SLOPE_R2]: [8, 0], [T.SLOPE_L2]: [0, 8], [T.SLOPE_L1]: [8, 16] };
+    const X = gx => this.offX + (gx - camX) * K, Y = gy => this.offY + gy * K;
+    ctx.beginPath();
+    for (let ty = 0; ty < L.h; ty++) {
+      for (let tx = tx0; tx <= tx1; tx++) {
+        const t = L.tiles[ty * L.w + tx];
+        const px = tx * TILE, py = ty * TILE;
+        if (EDGE.has(t)) {
+          const up = ty > 0 ? L.get(tx, ty - 1) : T.EMPTY;
+          if (!block(up)) { ctx.moveTo(X(px), Y(py)); ctx.lineTo(X(px + TILE), Y(py)); }
+          if (tx > 0 && !block(L.get(tx - 1, ty))) { ctx.moveTo(X(px), Y(py)); ctx.lineTo(X(px), Y(py + TILE)); }
+          if (tx < L.w - 1 && !block(L.get(tx + 1, ty))) { ctx.moveTo(X(px + TILE), Y(py)); ctx.lineTo(X(px + TILE), Y(py + TILE)); }
+        } else if (isSlope(t)) {
+          const [yl, yr] = SL[t];
+          ctx.moveTo(X(px), Y(py + yl)); ctx.lineTo(X(px + TILE), Y(py + yr));
+        } else if (t === T.SEMI) {
+          const up = ty > 0 ? L.get(tx, ty - 1) : T.EMPTY;
+          if (up !== T.SEMI && !block(up)) { ctx.moveTo(X(px), Y(py)); ctx.lineTo(X(px + TILE), Y(py)); }
+        }
+      }
+    }
+    ctx.lineWidth = Math.max(1, 0.7 * K);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(30,24,52,0.5)';
+    ctx.stroke();
   }
 
   // ===================== 背景 =====================
@@ -326,6 +362,14 @@ export class Renderer {
     world();
     this.updateWeathercocks(game);
     for (const d of game.decos) if (d.layer === 'back' && inView(d.x, d.wpx || 400)) drawDeco(ctx, d, L.themeAtPx(d.x), time, night);
+    // 背景と飾りを少しだけかすませて、足場とキャラクターが前に見えるようにする
+    {
+      const th = THEMES[L.themeAtPx(camX + this.viewW / 2)];
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = th.wash || (night ? 'rgba(8,12,34,0.2)' : 'rgba(236,244,252,0.14)');
+      ctx.fillRect(this.offX, this.offY, this.viewW * K, VIEW_H * K);
+      ctx.restore();
+    }
     // ブロックから出てくる途中のアイテム（ブロックの後ろ）
     for (const e of game.entities) if (e.behind) this.drawEntity(ctx, e, time, L);
 
@@ -333,7 +377,7 @@ export class Renderer {
     this.drawTiles(game, camX, time);
 
     world();
-    for (const d of game.decos) if (d.layer === 'mid' && inView(d.x, d.wpx || 400)) drawDeco(ctx, d, L.themeAtPx(d.x), time, night);
+    for (const d of game.decos) if (d.layer === 'mid' && inView(d.x, d.wpx || 400) && !(game.demo && d.type === 'hint')) drawDeco(ctx, d, L.themeAtPx(d.x), time, night);
     for (const z of game.zones) drawZone(ctx, z, time, camX, this.viewW);
     for (const pf of game.platforms) if (inView(pf.x, pf.w)) drawPlatformLook(ctx, pf, L.themeAtPx(pf.x), time, night);
     // 奥のもの → 手前のもの

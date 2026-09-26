@@ -4,30 +4,10 @@ import { bgLayer, sprite } from './registry.mjs';
 import { tr, g, path, ell, circ, rrect, rect, poly, rng, shade, mix, roundPoly, text, f } from './svg.mjs';
 import { wrap, ridgePath, ridgeY, cloud, anchor } from './bgs.mjs';
 import { U, tile, masonry, joints, SLOPES, slopeTile } from './tiles.mjs';
+import { clover, cloverTree } from './kit.mjs';
 
 const st = (c, w, o = {}) => ({ stroke: c, strokeWidth: w, strokeLinecap: 'round', strokeLinejoin: 'round', ...o });
 
-// ---------- 共通：クローバーのような葉っぱのかたまり（完成イメージの木） ----------
-function clover(x, y, r, c, light) {
-  const k = r * 0.52;
-  return [
-    circ(x - k, y, r * 0.62, c), circ(x + k, y, r * 0.62, c), circ(x, y - k, r * 0.62, c), circ(x, y + k * 0.7, r * 0.58, c),
-    light ? circ(x - k * 0.9, y - k * 0.6, r * 0.28, light, { opacity: 0.9 }) : ''
-  ].join('');
-}
-// 木（幹＋葉のかたまり）。s は大きさ
-function cloverTree(x, y, s, r, c) {
-  const out = [path(`M${x - 2.2 * s} ${y} C${x - 1.5 * s} ${y - 12 * s} ${x - 3 * s} ${y - 18 * s} ${x - 6 * s} ${y - 24 * s} L${x - 4 * s} ${y - 25 * s} C${x - 1 * s} ${y - 20 * s} ${x + 1 * s} ${y - 18 * s} ${x + 2 * s} ${y - 26 * s} L${x + 3.6 * s} ${y - 25 * s} C${x + 2.5 * s} ${y - 16 * s} ${x + 2.4 * s} ${y - 10 * s} ${x + 2.4 * s} ${y} Z`, c.trunk)];
-  const blobs = [];
-  for (let i = 0; i < 16; i++) {
-    const a = r() * Math.PI * 2, d = Math.sqrt(r());
-    blobs.push([x + Math.cos(a) * 13 * s * d, y - 32 * s + Math.sin(a) * 10 * s * d, (5 + r() * 3) * s]);
-  }
-  blobs.sort((a, b) => a[1] - b[1]);
-  for (const [bx, by, br] of blobs) out.push(clover(bx, by + 1.2 * s, br, c.dark));
-  for (const [bx, by, br] of blobs) out.push(clover(bx, by, br * 0.92, r() < 0.5 ? c.base : c.mid, c.light));
-  return out.join('');
-}
 
 // ========================================================================
 // 背景

@@ -169,8 +169,12 @@ h2.pop { animation: pop 0.5s cubic-bezier(.2, 1.6, .5, 1) both; color: #ffe66d; 
 .c-pink { color: #ff8fc0 !important; }
 .c-rainbow { background: linear-gradient(90deg, #ff5a5f, #ffb703, #8ac926, #4cc9f0, #9b5de5); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
 
-/* ---------- ステージを選ぶ（神戸の地図） ---------- */
-.select-screen { justify-content: flex-start; gap: 6px; background: linear-gradient(#bfe6ff, #e9f7ff); }
+/* ---------- ステージを選ぶ（ぼうけんマップ） ---------- */
+.select-screen {
+  justify-content: flex-start; gap: 6px;
+  background: linear-gradient(#bfe6ff, #e6f6ff);
+  padding-top: calc(max(6px, env(safe-area-inset-top)));
+}
 .select-head {
   width: 100%;
   display: flex;
@@ -178,40 +182,91 @@ h2.pop { animation: pop 0.5s cubic-bezier(.2, 1.6, .5, 1) both; color: #ffe66d; 
   justify-content: space-between;
   gap: 10px;
 }
-.select-head h2 { font-size: clamp(18px, 6vh, 30px); color: #1d3557; text-shadow: 0 2px 0 #fff; }
-.select-head .btn.small { min-width: 5em; }
-.medal-total { min-width: 5em; text-align: right; font-weight: 800; color: #1d3557; font-size: clamp(12px, 3.8vh, 17px); }
-.map-wrap { position: relative; flex: 1 1 auto; width: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
-#kobeMap { flex: 1 1 auto; min-width: 0; height: 100%; }
+.select-head .btn.small { min-width: 4.6em; padding: 0.3em 1em; }
+.wood-sign {
+  position: relative;
+  margin-right: auto;
+  padding: 3px 18px 5px;
+  background:
+    repeating-linear-gradient(0deg, rgba(120, 70, 30, 0.08) 0 3px, transparent 3px 9px),
+    linear-gradient(#f3cf98, #dcaa6a);
+  border: 3px solid #9a6a3a;
+  border-radius: 10px;
+  box-shadow: 0 3px 0 #7a4f2a, 0 6px 12px rgba(0, 0, 0, 0.22);
+  color: #5a3718;
+  text-align: center;
+  transform: rotate(-1.5deg);
+}
+.wood-sign::before, .wood-sign::after {
+  content: ''; position: absolute; top: 6px; width: 7px; height: 7px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff 0 20%, #9a8f86 30% 100%);
+}
+.wood-sign::before { left: 7px; }
+.wood-sign::after { right: 7px; }
+.ws-title { font-weight: 900; font-size: clamp(16px, 6.4vh, 28px); letter-spacing: 0.04em; line-height: 1.15; }
+.ws-flag { display: inline-block; width: 0.55em; height: 0.8em; margin-left: 0.25em; vertical-align: -0.05em;
+  background: linear-gradient(90deg, #5a3718 0 2px, transparent 2px), linear-gradient(135deg, #2f7fd6 0 50%, transparent 50%) 2px 0 / 100% 60% no-repeat; }
+.ws-sub { font-weight: 800; font-size: clamp(9px, 2.8vh, 12px); }
+.medal-total {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0.3em 0.9em;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 0 #9fb3d9, 0 6px 12px rgba(0, 0, 0, 0.18);
+  font-weight: 900; color: #1d3557; font-size: clamp(12px, 4vh, 17px);
+  white-space: nowrap;
+}
+.medal-total::before {
+  content: '★'; display: inline-grid; place-items: center;
+  width: 1.4em; height: 1.4em; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff3b0 0 25%, #ffcc00 26% 100%);
+  border: 2px solid #c77d00; color: #c77d00; font-size: 0.8em;
+}
+.map-wrap { position: relative; flex: 1 1 auto; width: 100%; min-height: 0; display: flex; align-items: stretch; justify-content: center; gap: 10px; }
+#kobeMap {
+  flex: 1 1 auto; min-width: 0;
+  border-radius: 18px; overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 6px 16px rgba(20, 60, 100, 0.25);
+  background: linear-gradient(#3f8a4a 0 30%, #2f8fd4 70%);
+}
 #kobeMap svg { width: 100%; height: 100%; display: block; }
 .map-node { cursor: pointer; }
 .map-node .ring { transition: transform 0.08s; transform-box: fill-box; transform-origin: center; }
 .map-node.pressed .ring { transform: scale(0.9); }
-.map-node.sel .ring { stroke: #ff5a5f; stroke-width: 5; }
+.map-node.sel .ring { stroke: #ffe066; stroke-width: 5; }
+.map-node.sel .halo { animation: halo 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes halo { 0% { opacity: 0.8; transform: scale(0.8); } 100% { opacity: 0; transform: scale(1.5); } }
 .stage-info {
   position: relative;
-  flex: 0 0 min(250px, 32%);
-  align-self: center;
+  flex: 0 0 min(260px, 31%);
+  align-self: stretch;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.97);
   color: #1d3557;
-  border-radius: 16px;
-  border: 3px solid #1d3557;
-  padding: 8px 12px 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  border-radius: 18px;
+  padding: 6px 12px 8px;
+  box-shadow: 0 6px 18px rgba(20, 60, 100, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 3px;
+  overflow: hidden;
 }
-.si-no { font-weight: 800; font-size: clamp(11px, 3.4vh, 14px); color: #e76f51; }
-.si-name { font-weight: 900; font-size: clamp(15px, 5.4vh, 24px); line-height: 1.2; text-align: center; word-break: keep-all; overflow-wrap: anywhere; }
-.si-name.long { font-size: clamp(13px, 4.4vh, 19px); }
-.si-kana { font-size: clamp(10px, 3vh, 13px); color: #4a5a70; }
-.si-medals { display: flex; gap: 6px; margin: 2px 0 6px; }
-.stage-info .medal { border-color: #9aa9bd; background: #e6edf5; }
+.si-no { font-weight: 900; font-size: clamp(11px, 3.4vh, 15px); color: #f07030; align-self: flex-start; }
+.si-name { font-weight: 900; font-size: clamp(15px, 5.2vh, 23px); line-height: 1.15; align-self: flex-start; text-align: left; word-break: keep-all; overflow-wrap: anywhere; }
+.si-name.long { font-size: clamp(13px, 4.3vh, 19px); }
+.si-kana { font-size: clamp(9px, 2.7vh, 12px); color: #6a7890; align-self: flex-start; margin-top: -2px; }
+.si-thumb { flex: 1 1 0; min-height: 30px; height: 0; width: 100%; object-fit: cover; border-radius: 10px; background: #cfe6f5; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6); }
+.si-desc { font-size: clamp(9px, 2.8vh, 12px); line-height: 1.35; color: #34405a; align-self: stretch; font-weight: 700; }
+.si-medals { display: flex; gap: 6px; margin: 1px 0 2px; }
+.stage-info .medal { border-color: #b9c4d2; background: #e6edf5; }
 .stage-info .medal.got { border-color: #c77d00; background: radial-gradient(circle at 35% 35%, #fff3b0 0 25%, #ffcc00 26% 100%); }
-.stage-info .btn { font-size: clamp(15px, 5vh, 22px); min-width: 7em; }
+.si-go-row { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 2px; }
+.stage-info .btn.go { font-size: clamp(15px, 5.2vh, 22px); min-width: 6.4em; padding: 0.3em 1.2em; }
+.go-arrow { margin-left: 0.35em; font-weight: 900; }
+.si-rin { position: absolute; right: -6px; bottom: -4px; width: clamp(30px, 11vh, 46px); height: auto; pointer-events: none; }
 .c-green { color: #a8e6a1 !important; }
 .c-blue { color: #9ad7ff !important; }
 
@@ -245,9 +300,9 @@ h2.pop { animation: pop 0.5s cubic-bezier(.2, 1.6, .5, 1) both; color: #ffe66d; 
 .stats small { font-size: 0.7em; opacity: 0.85; }
 @keyframes recPop { from { transform: scale(1); } to { transform: scale(1.12); } }
 /* ステージ選択：まだ取っていないメダルのヒント */
-.si-hints { font-size: clamp(10px, 2.8vh, 13px); line-height: 1.35; text-align: left; max-width: 230px; margin: 2px 0 4px; color: #1d3557; }
+.si-hints { font-size: clamp(9px, 2.6vh, 12px); line-height: 1.3; text-align: left; align-self: stretch; margin: 0; color: #1d3557; }
 .si-hints div::before { content: '？ '; color: #e0a100; font-weight: 900; }
-.si-best { font-size: clamp(10px, 2.8vh, 13px); color: #4a5a70; font-weight: 700; }
+.si-best { font-size: clamp(9px, 2.6vh, 12px); color: #4a5a70; font-weight: 700; }
 
 /* ---------- タッチ操作ボタン ---------- */
 #controls {

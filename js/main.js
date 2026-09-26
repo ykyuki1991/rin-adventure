@@ -24,6 +24,20 @@ const MAP_NODES = [
   { x: 790, y: 88, label: '摩耶山', color: '#9b5de5' }
 ];
 
+// ステージの紹介文（ステージ選択のカードに出す）
+const STAGE_DESC = [
+  'りんの いえから しゅっぱつ！ しょうてんがいを ぬけて 川を わたろう。',
+  'パンダや ゾウが まってるよ。さくらの どうぶつえんへ！',
+  '新幹線の えきから 山の中へ。たきに 気をつけて！',
+  'ゴンドラで 空の たび。ハーブ園を めざそう！',
+  'かざみどりの やかたと れんがの 坂道を のぼろう！',
+  'にぎやかな まちから 南京町へ。ぶたまんの におい！',
+  'ゆうやけの みなと。ポートタワーや かんらんしゃを 見ながら すすもう！',
+  'なつの すなはま！ シャチの せなかに のろう。',
+  'せかいで いちばん ながい つりばしを わたろう！',
+  'ほしぞらの 山で さいごの たたかい。やけいを とりもどせ！'
+];
+
 class App {
   constructor() {
     this.params = new URLSearchParams(location.search);
@@ -165,32 +179,31 @@ class App {
       const locked = i + 1 > unlocked;
       const got = (this.save.medals[def.id] || []).length;
       const cleared = !!this.save.cleared[def.id];
+      const label = locked ? '？？？' : n.label;
+      // 名前は白い丸いふだに入れる
+      const lw = label.length * 15 + 16, lx = n.x + (n.lx || 0), ly = n.y + (n.ly ?? 42);
+      const bx = n.la === 'start' ? lx - 6 : lx - lw / 2;
       return `<g class="map-node" data-i="${i}">
         <circle cx="${n.x}" cy="${n.y + 10}" r="38" fill="transparent"/>
+        <circle class="halo" cx="${n.x}" cy="${n.y}" r="24" fill="none" stroke="#ffe066" stroke-width="4" opacity="0"/>
+        <circle cx="${n.x}" cy="${n.y + 3}" r="23" fill="#000" opacity="0.18"/>
         <circle class="ring" cx="${n.x}" cy="${n.y}" r="22" fill="${locked ? '#9aa3ad' : n.color}" stroke="#fff" stroke-width="4"/>
         <text x="${n.x}" y="${n.y + 7}" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">${locked ? '？' : i + 1}</text>
-        <text x="${n.x + (n.lx || 0)}" y="${n.y + (n.ly ?? 44)}" text-anchor="${n.la || 'middle'}" font-size="16" font-weight="800" fill="#1d3557" stroke="#fff" stroke-width="5" paint-order="stroke">${locked ? '？？？' : n.label}</text>
+        <rect x="${bx}" y="${ly - 15}" width="${lw}" height="22" rx="11" fill="#ffffff" opacity="0.95"/>
+        <text x="${bx + lw / 2}" y="${ly + 1}" text-anchor="middle" font-size="15" font-weight="900" fill="#1d3557">${label}</text>
         ${cleared ? `<text x="${n.x + 24}" y="${n.y - 14}" text-anchor="middle" font-size="15" font-weight="900" fill="#ffb703" stroke="#fff" stroke-width="3" paint-order="stroke">★${got}</text>` : ''}
       </g>`;
     }).join('');
     $('kobeMap').innerHTML = `
       <svg viewBox="50 0 880 440" preserveAspectRatio="xMidYMid meet" aria-label="神戸の地図">
-        <defs>
-          <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd0f5"/><stop offset="1" stop-color="#3a9ad9"/></linearGradient>
-          <linearGradient id="landG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc47a"/><stop offset="1" stop-color="#cfe8b0"/></linearGradient>
-        </defs>
-        <rect x="0" y="0" width="1000" height="440" fill="url(#seaG)"/>
-        <path d="M0,0 L1000,0 L1000,288 C930,292 860,294 790,298 C720,302 660,300 610,304 C560,308 520,330 480,336 C450,340 430,326 400,318 C360,308 320,300 280,292 C230,284 190,278 150,270 C110,262 60,256 0,252 Z" fill="url(#landG)"/>
-        <path d="M130,236 C200,150 260,170 320,120 C380,80 430,110 480,70 C540,30 600,70 660,40 C720,20 790,30 850,20 C900,15 950,30 1000,20 L1000,150 C920,165 850,160 790,170 C700,180 640,160 580,175 C500,190 440,170 380,190 C300,210 220,230 130,236 Z" fill="#4f9a5a" opacity="0.85"/>
-        <text x="880" y="60" font-size="15" font-weight="800" fill="#e9f5db" text-anchor="middle">六甲山</text>
-        <path d="M565,338 L640,338 L646,388 L570,392 Z" fill="#cfe8b0" stroke="#9fc98a" stroke-width="2"/>
-        <text x="606" y="370" font-size="12" font-weight="700" fill="#4a6b3a" text-anchor="middle">ポートアイランド</text>
-        <path d="M0,330 C40,322 90,330 140,352 C170,368 160,400 150,440 L0,440 Z" fill="#a9d18e"/>
-        <text x="100" y="405" font-size="15" font-weight="800" fill="#4a6b3a" text-anchor="middle">淡路島</text>
-        <line x1="108" y1="266" x2="72" y2="340" stroke="#ffffff" stroke-width="5"/>
-        <rect x="95" y="278" width="5" height="16" fill="#fff"/><rect x="80" y="312" width="5" height="16" fill="#fff"/>
-        <text x="300" y="390" font-size="18" font-weight="800" fill="#e6f6ff" text-anchor="middle">大阪湾</text>
-        <polyline points="${route}" fill="none" stroke="#ffffff" stroke-width="5" stroke-dasharray="10 9" stroke-linecap="round" opacity="0.9"/>
+        <image href="art/map.svg" x="0" y="0" width="1000" height="440"/>
+        <g font-weight="900" text-anchor="middle" paint-order="stroke" stroke-linejoin="round">
+          <text x="880" y="52" font-size="16" fill="#ffffff" stroke="#2f6a3a" stroke-width="4">六甲山</text>
+          <text x="300" y="396" font-size="19" fill="#ffffff" stroke="#2f7fc4" stroke-width="4">大阪湾</text>
+          <text x="80" y="410" font-size="15" fill="#ffffff" stroke="#5a8a4a" stroke-width="4">淡路島</text>
+          <text x="606" y="412" font-size="12" fill="#ffffff" stroke="#2f7fc4" stroke-width="4">ポートアイランド</text>
+        </g>
+        <polyline points="${route}" fill="none" stroke="#ffffff" stroke-width="5" stroke-dasharray="10 9" stroke-linecap="round" opacity="0.95"/>
         ${nodes}
       </svg>`;
     for (const g of $('kobeMap').querySelectorAll('.map-node')) {
@@ -202,8 +215,13 @@ class App {
   selectNode(i) {
     this.selIdx = i;
     const def = LEVELS[i];
-    // 選んだ場所の背景を先に用意しておく
-    Art.prepareBg([...new Set(['yakumo', ...def.themes.map(z => z.theme)])], this.renderer.K);
+    // 選んだステージを後ろで動かして、カードの小窓に映す（絵もここで用意される）
+    if (!this.game.demo || this.game.stageIdx !== i) {
+      this.game.start(i, { demo: true });
+      this.game.cam = Math.min(this.game.level.pxW * 0.08, Math.max(0, this.game.level.pxW - 500));
+    }
+    $('siDesc').textContent = locked0(this, i) ? 'まえの ステージを クリアすると 行けるよ。' : STAGE_DESC[i] || '';
+    this.drawRinIcon();
     const locked = i + 1 > this.save.unlocked;
     for (const g of $('kobeMap').querySelectorAll('.map-node')) g.classList.toggle('sel', parseInt(g.dataset.i, 10) === i);
     $('stageInfo').classList.remove('hidden');
@@ -220,6 +238,33 @@ class App {
     const bt = (this.save.times || {})[def.id];
     $('siBest').textContent = cleared && bt !== undefined ? `ベストタイム ${Math.floor(bt / 60)}:${(bt % 60).toFixed(1).padStart(4, '0')}` : '';
     $('btnGo').classList.toggle('hidden', locked);
+  }
+
+  // カードの小窓：後ろで動いているステージの画面を小さく写す
+  drawThumb() {
+    const c = $('siThumb'), r = this.renderer;
+    if (!c || !c.clientWidth || !this.game.demo) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const vw = Math.min(r.viewW, 427);
+    const w = Math.round(c.clientWidth * dpr), h = Math.round(w * 240 / vw);
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    const ctx = c.getContext('2d');
+    ctx.drawImage(r.canvas, r.offX, r.offY, vw * r.K, 240 * r.K, 0, 0, w, h);
+    if (locked0(this, this.selIdx)) {
+      ctx.fillStyle = 'rgba(30,40,70,0.55)'; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#fff'; ctx.font = `900 ${Math.round(h * 0.3)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('？', w / 2, h / 2);
+    }
+  }
+
+  // 出発ボタンのよこの、りんの顔
+  drawRinIcon() {
+    const c = $('siRin');
+    if (!c || !Art.has('rin/icon')) return;
+    const ctx = c.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height);
+    ctx.setTransform(c.width / 18, 0, 0, c.height / 18, 0, 0);
+    Art.draw(ctx, 'rin/icon', 9, 9.5);
   }
 
   // ===================== ゲームの進行 =====================
@@ -358,8 +403,12 @@ class App {
       if (n >= 5) this.acc = 0;
     }
     this.renderer.draw(this.game, this);
+    if (this.mode === 'select') this.drawThumb();
   }
 }
+
+// まだ行けないステージか
+function locked0(app, i) { return i + 1 > app.save.unlocked; }
 
 // オフラインでも遊べるようにする（GitHub Pages などの https で動く）
 if ('serviceWorker' in navigator && location.protocol === 'https:') {

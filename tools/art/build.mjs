@@ -4,7 +4,7 @@ import { writeFileSync, readFileSync, mkdirSync, readdirSync, unlinkSync } from 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Defs, f } from './svg.mjs';
-import { SPRITES, BACKGROUNDS } from './registry.mjs';
+import { SPRITES, BACKGROUNDS, PICTURES } from './registry.mjs';
 
 import './chars.mjs';
 import './enemies.mjs';
@@ -18,6 +18,13 @@ import './bgs.mjs';
 import './bgs2.mjs';
 import './yakumo.mjs';
 import './yakumo2.mjs';
+import './map.mjs';
+
+// ステージごとの絵（tools/art/stages/*.mjs）は、名前の順にすべて読みこむ
+{
+  const dir = join(dirname(fileURLToPath(import.meta.url)), 'stages');
+  for (const fn of readdirSync(dir).filter(f => f.endsWith('.mjs')).sort()) await import('./stages/' + fn);
+}
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const OUT = join(ROOT, 'art');
@@ -65,6 +72,16 @@ for (const [theme, layers] of Object.entries(BACKGROUNDS)) {
   });
 }
 
+// 1枚絵
+const picFiles = [];
+for (const P of PICTURES) {
+  const defs = new Defs(`pic${P.name}_`);
+  const body = P.draw(defs);
+  const file = `art/${P.name}.svg`;
+  writeFileSync(join(ROOT, file), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${P.w} ${P.h}" width="${P.w}" height="${P.h}">${defs.svg()}${body}</svg>`);
+  picFiles.push(file);
+}
+
 const js = `// 自動生成ファイル（tools/art/build.mjs）。手で書きかえないでください
 export const SHEETS = ${JSON.stringify(sheetInfo)};
 export const FRAMES = {
@@ -77,7 +94,7 @@ writeFileSync(join(ROOT, 'js', 'art-data.js'), js);
 {
   const swPath = join(ROOT, 'sw.js');
   const sw = readFileSync(swPath, 'utf8');
-  const files = [...Object.values(sheetInfo).map(s => s.file), ...Object.values(bgInfo).flat().map(l => l.file)];
+  const files = [...Object.values(sheetInfo).map(s => s.file), ...Object.values(bgInfo).flat().map(l => l.file), ...picFiles];
   const block = '  // ART-START（tools/art/build.mjs が自動で書きかえます）\n' + files.map(f => `  './${f}',`).join('\n') + '\n  // ART-END';
   writeFileSync(swPath, sw.replace(/  \/\/ ART-START[\s\S]*?\/\/ ART-END/, block));
 }
