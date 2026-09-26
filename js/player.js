@@ -28,6 +28,7 @@ export class Player {
     this.visible = true;
     this.t = 0;
     this.powerFlash = 0;
+    this.springT = 0;       // ジャンプ台ではねた直後（少しのあいだ高く上がる）
   }
   get cx() { return this.x + this.w / 2; }
   get bottom() { return this.y + this.h; }
@@ -99,7 +100,8 @@ export class Player {
     // --- 重力（滝・シャワーなどの力も足す） ---
     const f = game.forceAt ? game.forceAt(this) : null;
     let g;
-    if (this.vy < 0) g = this.jumping ? P.gravityUpHold : P.gravityUp;
+    if (this.springT > 0) this.springT -= dt;
+    if (this.vy < 0) g = (this.jumping || this.springT > 0) ? P.gravityUpHold : P.gravityUp;
     else g = P.gravityDown;
     if (f) g += f.ay;
     this.vy = Math.min(this.vy + g * dt, P.maxFall + (f && f.ay > 0 ? 150 : 0));

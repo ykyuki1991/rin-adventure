@@ -173,6 +173,15 @@ export class Sound {
         this.noiseHit(t, 0.35, 0.3, d, 300, 3000);
         this.osc('sine', 500, t, 0.25, 0.12, d, { to: 120, slide: 0.25 });
         break;
+      case 'spring':
+        this.osc('triangle', 180, t, 0.3, 0.22, d, { to: 820, slide: 0.22 });
+        this.osc('sine', 90, t, 0.12, 0.2, d, { to: 60, slide: 0.1, pluck: true });
+        break;
+      case 'ring': seq(['C5', 'G5', 'C6', 'E6', 'G6'], 0.05, 'triangle', 0.16); break;
+      case 'redcoin':
+        this.osc('pulse25', freq('E6'), t, 0.06, 0.08, d);
+        this.osc('pulse25', freq('A6'), t + 0.06, 0.25, 0.08, d, { pluck: true });
+        break;
       case 'die': this.playJingle('die'); break;
     }
   }

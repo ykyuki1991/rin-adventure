@@ -456,6 +456,9 @@ export class Renderer {
       case 'tako': return S.drawTako(ctx, e, P, time);
       case 'boots': return S.drawBoots(ctx, e.cx, e.y + 7, e.t);
       case 'popcoin': return S.drawCoin(ctx, e.cx, e.y + 7, e.t * 3);
+      case 'spring': return S.drawSpring(ctx, e);
+      case 'ring': return S.drawRing(ctx, e, time);
+      case 'redcoin': return S.drawRedCoin(ctx, e.cx, e.y + 7, e.t + e.i * 0.3);
       case 'apple': return S.drawApple(ctx, e.cx, e.y + 7, e.t);
       case 'heart': return S.drawHeart(ctx, e.cx, e.y + 7, e.t, 1, P.heart);
       case 'star': return S.drawStar(ctx, e.cx, e.y + 7, e.t);
@@ -563,6 +566,17 @@ export class Renderer {
       if (!now && before) ctx.globalAlpha = 0.45;
       S.drawMedal(ctx, 0, 0, now ? game.time : 0, now || before);
       ctx.restore();
+    }
+    // コインチャレンジ（のこり時間と取った数）
+    const rg = game.activeRing;
+    if (rg && rg.state === 'run') {
+      const n = rg.coins.length, w = n * 9 + 34, x0 = this.viewW / 2 - w / 2, yy = y + 17;
+      ctx.fillStyle = 'rgba(20,24,48,0.55)'; S.rr(ctx, x0, yy - 7, w, 14, 7); ctx.fill();
+      for (let i = 0; i < n; i++) { ctx.globalAlpha = i < rg.got ? 1 : 0.3; S.drawRedCoin(ctx, x0 + 9 + i * 9, yy, 0, 0.55); }
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'center';
+      text(String(Math.ceil(rg.timer)), x0 + w - 12, yy + 0.5, rg.timer < 3.5 ? '#ff8a8a' : '#ffffff');
+      ctx.textAlign = 'left';
     }
     // ボスの体力
     const b = game.boss;

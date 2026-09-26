@@ -60,7 +60,7 @@ function stage1() {
   b.ground(144, 158, 10);
   b.deco('ytree', 146, 10).deco('ytree', 156, 10, { flip: true }).deco('pots', 150, 10).deco('ylamp', 153, 10);
   b.deco('house2', 162.5, 8).deco('pots', 168.5, 8).deco('ylamp', 171, 8).deco('bld', 175.5, 8, { shop: 'cafe' });
-  b.deco('ytree', 183, 8).deco('ylamp', 187, 8).deco('ytree', 199, 8, { flip: true }).deco('pots', 201.5, 8);
+  b.deco('ytree', 199, 8, { flip: true }).deco('pots', 201.5, 8);
   for (const [x, y, v, k] of [[145, 10, 0, 0.8], [156.5, 10, 1, 0.7], [163, 8, 1, 1], [171.5, 8, 0, 0.6], [180, 8, 1, 0.85], [188.5, 8, 0, 0.55], [197, 8, 1, 1]]) b.deco('ivy', x, y, { v, s: k, layer: 'mid', flip: x % 2 === 0 });
   for (const [x, y] of [[165, 11], [178, 12], [191, 11], [148, 13], [203, 12]]) b.deco('drain', x, y, { layer: 'mid' });
   b.row(150, 7, 'h');
@@ -77,6 +77,17 @@ function stage1() {
   b.hint(20, 8, ['rin', 'arrowD', 'slime']);
   b.hint(27, 8, ['btnHold', 'arc']);
   b.hint(82, 6, ['rin', 'arrowD', 'train', 'arrowR']);
+  // 【起】ジャンプ台をためす（上にコイン。失敗しても何もおきない安全な場所）
+  b.spring(27);
+  b.row(27, 3, 'o').row(27, 5, 'o').row(28, 2, 'o');
+  b.hint(26, 8, ['spring', 'arrowU', 'btnHold']);
+  // 【承】アーケードの屋根でコインチャレンジ（リングにさわると赤いコインが出る）
+  b.ring(35, 5, [[39, 3], [43, 4], [47, 3], [51, 4], [55, 3], [59, 4], [63, 3], [67, 4]], 8);
+  // 【結】坂の上：ブロックの足場と、旗のてっぺんをねらう階段
+  b.row(176, 4, 'B?B').row(180, 2, 'h');
+  b.enemy('slime', 166, 7);
+  b.stairs(183, 4, 1, 8);
+  b.coinArc(183, 188, 3, 2);
   // コインの道しるべ
   b.coinArc(18, 24, 11, 2).coinArc(24, 29, 10, 2);
   b.coinArc(89, 96, 6, 1).coinArc(104, 111, 6, 1);
@@ -148,16 +159,22 @@ function stage2() {
   b.deco('s2_sakura', 170.5, 13, { s: 0.95, wpx: 70 });
   // 旧ハンター住宅
   b.deco('s2_hunter', 174, 13, { wpx: 160 });
-  b.deco('s2_sakura', 185.5, 13, { wpx: 70 }).deco('s2_signpost', 190, 13, { labels: ['しんこうべ', 'もん', 'でぐち'] });
+  b.deco('s2_sakura', 183, 13, { wpx: 70 });
   b.enemy('penguin', 156).enemy('spiky', 162).enemy('penguin', 168).enemy('bird', 172, 7).enemy('slime', 178);
   b.row(165, 9, 'B?B?B');
   b.hint(32, 8, ['rin', 'arrowD', 'giraffe']);
   b.hint(85, 4, ['elephant', 'arrowU', 'rin']);
+  // 【転】ペンギン広場：ジャンプ台で高くとびながら赤いコインを集める
+  b.spring(158);
+  b.ring(153, 12, [[157, 9], [158, 6], [159, 3], [161, 2], [163, 3], [165, 6], [167, 7], [169, 10]], 8);
+  // 【結】旗のてっぺんをねらう階段
+  b.stairs(186, 5);
+  b.enemy('slime', 182).enemy('bird', 184, 6);
   // コインの道しるべ
   b.coinArc(18, 23, 11, 2).coinArc(35, 45, 5, 2);
   b.row(89, 4, 'oo').row(89, 7, 'oo').row(89, 10, 'oo');
   b.coinArc(112, 115, 11, 2).coinArc(116, 119, 11, 2).coinArc(120, 123, 11, 2);
-  b.coinArc(151, 158, 11, 2).coinArc(185, 192, 12, 3);
+  b.coinArc(151, 156, 11, 2);
   b.goal(195);
   return b.build();
 }
@@ -251,11 +268,14 @@ function stage3() {
   b.row(176, 2, '?S?');
   b.enemy('slime', 174, 5).enemy('spiky', 181, 5).enemy('boar', 190, 5).enemy('bird', 192, 2);
   b.deco('s3_maple', 170, 6, { v: 1, wpx: 70 }).deco('s3_cedar', 174.5, 6).deco('s3_boulder', 179, 6, { v: 1 }).deco('s3_kahi', 184, 6);
-  b.deco('s3_maple', 188.5, 6, { v: 0, wpx: 70 }).deco('s3_post', 193, 6, { text: 'ロープウェイ' }).deco('s3_lantern', 195.5, 6).deco('s3_maple', 198, 6, { v: 1, s: 0.85, wpx: 70 });
+  b.deco('s3_maple', 188.5, 6, { v: 0, wpx: 70 }).deco('s3_post', 192, 6, { text: 'ロープウェイ' });
   for (const [x, y, v, k] of [[35.5, 10, 0, 0.6], [52, 10, 1, 0.7], [59, 10, 0, 0.6], [76, 12, 0, 0.5], [118, 12, 1, 0.5], [132, 9, 1, 0.8], [139.5, 9, 0, 0.7], [160, 9, 1, 0.8],
     [171, 6, 0, 0.9], [177.5, 6, 1, 1], [185, 6, 0, 0.8], [191.5, 6, 1, 1], [199, 6, 0, 0.9], [206, 6, 1, 1]]) b.deco('ivy', x, y, { v, s: k, layer: 'mid', flip: x % 2 < 1 });
   b.checkpoint(156, 9);                 // 雄滝をこえたところ
   b.hint(39, 6, ['waterfall', 'arrowD']);
+  // 【結】ロープウェイ乗り場への道：イノシシをよけながら赤いコインを集め、階段から旗へ
+  b.ring(169, 5, [[172, 4], [175, 3], [179, 4], [182, 3], [185, 4], [188, 3], [191, 4], [193, 2]], 8);
+  b.stairs(195, 3, 1, 6);
   // コインの道しるべ
   b.coinArc(40, 47, 9, 2).coinArc(64, 71, 10, 2).coinArc(106, 113, 10, 2);
   b.coinsAbove(129, 143, 3, 0).coinArc(183, 189, 5, 2);
@@ -317,7 +337,7 @@ function stage4() {
   b.enemy('slime', 176, 4).enemy('boar', 181, 4);
   b.rampDown(184, 5, 2, true);
   b.ground(188, 219, 7);
-  b.deco('s4_scope', 189, 7).deco('s4_planter', 190.5, 7).deco('s4_tree', 197, 7).deco('s4_lamp', 201, 7).deco('s4_bench', 202, 7);
+  b.deco('s4_scope', 191, 7).deco('s4_planter', 192.5, 7).deco('s4_tree', 196, 7);
   b.deco('s4_cypress', 208, 7).deco('s4_terrace', 209, 7).deco('s4_lavender', 213, 7, { n: 1, wpx: 100 });
   b.enemy('spiky', 194, 6).enemy('bird', 198, 3);
   // 石がきのツタと花（タイルの前）
@@ -325,9 +345,13 @@ function stage4() {
   b.checkpoint(126, 7);                 // 2本目のロープウェイをおりたところ
   b.hint(10, 8, ['rin', 'arrowD', 'gondola']);
   b.hint(74, 5, ['wind', 'arrowR', 'rin']);
+  // 【結】展望台：ジャンプ台で空の赤いコインを集めて、階段から旗へ
+  b.spring(188, 7);
+  b.ring(185, 6, [[187, 4], [188, 2], [189, 1], [191, 1], [193, 2], [195, 3], [196, 1], [198, 2]], 7);
+  b.mat('wood', () => b.stairs(199, 4, 1, 7));
   // コインの道しるべ（ゴンドラの通り道の少し上）
   b.coinLine(20, 9, 56, 6, 4).coinLine(82, 6, 120, 4, 4);
-  b.coinArc(128, 134, 6, 2).coinArc(185, 191, 6, 2).coinsAbove(200, 203, 1, 0);
+  b.coinArc(128, 134, 6, 2);
   b.goal(205, 7);
   // ワイヤーはこのステージの絵で描く
   for (const d of b.decos) if (d.type === 'cable') d.type = 's4_cable';
@@ -408,11 +432,16 @@ function stage5() {
   b.deco('s5_lamp', 177.5, 13).deco('s5_cypress', 181, 13).deco('s5_tree', 185, 13, { s: 0.8 });
   b.deco('s5_rhine', 188.5, 13, { flip: true, wpx: 130 });
   b.deco('s5_fence', 179, 13, { w: 28, wpx: 460 });
-  b.deco('s5_pot', 180, 13).deco('s5_planter', 196.5, 13);
+  b.deco('s5_pot', 180, 13);
   b.deco('s5_conifer', 203, 13).deco('s5_lamp', 206, 13).deco('s5_tree', 210, 13, { flip: true });
   b.deco('s5_fence', 201, 13, { w: 13, wpx: 220 });
   b.enemy('slime', 180).enemy('spiky', 186).enemy('slime', 190);
   b.row(184, 9, '?B?');
+  // 【転】萌黄の館の屋根をこえて赤いコインを集める
+  b.ring(147, 12, [[152, 10], [156, 9], [160, 10], [164, 8], [168, 7], [171, 4], [174, 7], [177, 9]], 8);
+  // 【結】旗のてっぺんをねらう階段
+  b.stairs(191, 6);
+  b.enemy('bird', 194, 4);
   // れんがの壁のツタ（地面の前）
   for (const [x, y, v, k] of [[36, 12, 0, 0.7], [42, 9, 1, 0.9], [57, 9, 0, 0.8], [75, 9, 1, 1], [86, 9, 0, 0.8], [98, 9, 1, 0.9], [106, 12, 0, 0.6], [132, 8, 1, 0.85], [138, 8, 0, 0.7], [5, 13, 0, 0.45], [152, 13, 0, 0.45], [199, 13, 1, 0.4]]) b.deco('s5_ivy', x, y, { v, s: k, layer: 'mid', flip: x % 2 === 0 });
   // コインの道しるべ
@@ -489,6 +518,10 @@ function stage6() {
   b.row(191, 7, '---------');
   // 南京町広場のあずまや
   b.deco('s6_pavilion', 203.5, 13, { wpx: 110 });
+  // 【結】ジャンプ台で西安門の屋根へ。ちょうちんの下の赤いコインを集める
+  b.spring(188);
+  b.ring(184, 12, [[188, 8], [189, 5], [192, 5], [195, 5], [198, 5], [201, 7], [203, 9], [205, 11]], 8);
+  b.enemy('lantern', 198, 9);
   // コインの道しるべ（ビルの屋上のあいだ・南京町）
   b.coinArc(52, 55, 7, 2).coinArc(60, 63, 5, 2).coinArc(67, 70, 7, 2);
   b.coinArc(126, 131, 11, 2).coinArc(170, 176, 11, 2);
@@ -505,7 +538,7 @@ function stage7() {
   b.deco('s7_soko', 0, 13, { wpx: 110 });
   b.sign(12, '神戸港', 'こうべこう', 13, 'board');
   b.deco('s7_bekobe', 16, 13, { wpx: 90 });
-  for (const x of [7, 26, 47, 62, 105, 111, 120, 132, 162, 176, 190, 204]) b.deco('s7_lamp', x, 13).deco('s7_pool', x, 13, { layer: 'mid' });
+  for (const x of [7, 26, 47, 62, 105, 111, 120, 132, 162, 176, 190]) b.deco('s7_lamp', x, 13).deco('s7_pool', x, 13, { layer: 'mid' });
   for (const x of [14, 21, 29, 45, 58, 74, 102, 118, 158, 183, 198]) b.deco('s7_bollard', x, 13);
   for (const x of [28, 46, 80]) b.deco('s7_ladder', x, 13, { layer: 'mid' });
   b.enemy('crab', 24);
@@ -559,6 +592,14 @@ function stage7() {
   b.deco('s7_soko', 192, 13, { wpx: 110 });           // 広場のおくの小さいレンガ倉庫
   b.enemy('slime', 166).enemy('crab', 172).enemy('bird', 180, 6).enemy('spiky', 186).enemy('slime', 194);
   b.row(178, 9, 'B?BLB');
+  // 【承】ハーバーランドの広場：カニをよけながら観覧車の下まで赤いコインを集める
+  b.ring(115, 12, [[118, 10], [121, 9], [124, 10], [127, 9], [130, 10], [133, 9], [136, 11], [140, 12]], 8);
+  // 【起】岸壁のはじめ：ジャンプ台で BE KOBE の上の空へ
+  b.spring(22);
+  b.row(21, 6, 'ooo').row(22, 4, 'o');
+  // 【結】旗のてっぺんをねらう階段
+  b.stairs(204, 6);
+  b.enemy('crab', 200);
   b.checkpoint(170);                    // ハーバーランドの広場
   // コインの道しるべ
   b.coinArc(31, 44, 10, 2);
@@ -604,17 +645,23 @@ function stage8() {
   b.enemy('bird', 104, 5).enemy('bird', 118, 6);
   b.ground(126, 219);
   b.deco('s8_pine', 130, 13).deco('s8_chair', 133.5, 13).deco('s8_toys', 155.5, 13).deco('s8_life', 161, 13);
-  b.deco('s8_pine', 170, 13, { v: 1, flip: true }).deco('s8_chair', 193, 13, { flip: true }).deco('s8_pine', 200, 13).deco('s8_castle', 210, 13);
+  b.deco('s8_pine', 170, 13, { v: 1, flip: true }).deco('s8_chair', 191, 13, { flip: true }).deco('s8_castle', 210, 13);
   b.enemy('crab', 133).enemy('spiky', 137);
   // パラソルの階段
   [[140, 10], [143, 8], [146, 6], [149, 4]].forEach(([x, y], i) => para(x, y, i));
   b.medal(152, 1, 'いちばん上のパラソルからジャンプ');
-  b.enemy('crab', 156).enemy('crab', 162).enemy('bird', 166, 6).enemy('spiky', 175);
+  b.enemy('crab', 156).enemy('crab', 162).enemy('bird', 170, 5).enemy('spiky', 180);
   b.deco('s8_umi', 178, 13, { v: 1, text: 'かき氷', wpx: 140 });
   b.row(186, 9, 'BLB');                 // 明石焼き（1UP）
   b.enemy('crab', 190);
   b.checkpoint(170);                    // パラソルの階段のあと
   b.hint(93, 8, ['rin', 'arrowD', 'orca']);
+  // 【転】パラソルの上の赤いコイン（パラソルをとびうつる）
+  para(164, 10, 1); para(168, 8, 2); para(172, 10, 3);
+  b.ring(158, 12, [[164, 8], [165, 8], [168, 6], [169, 6], [172, 8], [173, 8], [176, 11], [177, 11]], 8);
+  // 【結】旗のてっぺんをねらう階段
+  b.mat('wood', () => b.stairs(196, 6));
+  b.enemy('crab', 194).enemy('bird', 188, 6);
   // コインの道しるべ（浮き輪のあいだ・シャチのジャンプ・パラソル）
   b.coinArc(44, 48, 10, 2).coinArc(48, 52, 10, 2).coinArc(52, 56, 10, 2).coinArc(56, 60, 10, 2);
   b.coinArc(99, 106, 8, 3).coinArc(112, 121, 8, 3);
@@ -684,6 +731,17 @@ function stage9() {
   b.row(190, 6, 'BLB');                 // 明石焼き（1UP）
   b.enemy('slime', 172, 9).enemy('spiky', 186, 9).enemy('slime', 194, 9).enemy('bird', 200, 5);
   b.checkpoint(168, 10);                // 2本目の主塔をこえたところ
+  // 【起】舞子公園：ブロックと、スライム
+  b.row(10, 9, 'B?B').row(18, 9, '?');
+  b.enemy('slime', 20);
+  // 【承】橋の上：ジャンプ台でメインケーブルへ近道
+  b.spring(47, 10);
+  b.enemy('slime', 50, 9);
+  // 【転】メインケーブルの上を走りぬける赤いコイン（風にまけずに）
+  b.ring(88, 3, [[95, 2], [102, 3], [109, 2], [116, 3], [123, 2], [130, 3], [137, 2], [144, 3]], 9);
+  // 【結】旗のてっぺんをねらう階段
+  b.mat('steel', () => b.stairs(205, 6, 1, 10));
+  b.enemy('spiky', 202, 9);
   // コインの道しるべ（ケーブルの上・道路のすきま）
   b.coinsAbove(88, 152, 5, 0);
   b.coinArc(98, 104, 8, 2).coinArc(176, 182, 8, 2);
@@ -749,6 +807,8 @@ function stage10() {
   b.enemy('boss', 196, 7);
   b.rect(224, 0, 231, 7, 'X');
   b.checkpoint(166, 8);                 // ボスの前（負けてもここから）
+  // 【起】牧場：丘をこえる赤いコイン
+  b.ring(25, 12, [[28, 10], [30, 9], [33, 8], [36, 9], [38, 8], [40, 7], [43, 8], [45, 9]], 7);
   // コインの道しるべ
   b.coinArc(26, 33, 11, 2).coinArc(39, 45, 8, 2);
   b.coinLine(55, 8, 73, 4, 3);
