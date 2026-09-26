@@ -118,6 +118,7 @@ js/tileart.js         タイルに使う SVG の絵を選ぶ
 js/art-data.js        絵の一覧（自動生成）
 art/                  SVG の絵
 tools/art/            SVG の絵を作るプログラム
+tools/art/rin/        りんのキャラ表（sheet.webp）と、そこから切り出した絵（extract.cjs で作る）
 js/sprites.js         キャラクター・敵・アイテムの絵
 js/picto.js           看板・ヒント・お知らせに使う絵記号（ステージの中には文字を出さない）
 js/audio.js           効果音と BGM（音声ファイルなし、その場で合成）

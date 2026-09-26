@@ -28,7 +28,7 @@ async function rasterize(text, w, h, S) {
 }
 
 // キャラクター・敵・アイテム・乗り物には細いふちどりをつける（背景とまざらず、見分けやすくするため）
-const OUTLINE = new Set(['chars', 'enemies', 'items', 'pf']);
+const OUTLINE = new Set(['chars', 'rin', 'enemies', 'items', 'pf']);
 const OUTLINE_W = 0.6;                 // ふちの太さ（ゲームの1ドット単位）
 const OUTLINE_COLOR = 'rgba(34,26,54,0.88)';
 function outline(c, S) {
