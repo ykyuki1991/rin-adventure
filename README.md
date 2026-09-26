@@ -121,7 +121,8 @@ tools/art/            SVG の絵を作るプログラム
 tools/art/rin/        りんのキャラ表（sheet.webp）と、そこから切り出した絵（extract.cjs で作る）
 js/sprites.js         キャラクター・敵・アイテムの絵
 js/picto.js           看板・ヒント・お知らせに使う絵記号（ステージの中には文字を出さない）
-js/audio.js           効果音と BGM（音声ファイルなし、その場で合成）
+js/audio.js           効果音と BGM の再生（音声ファイルなし、その場で合成）
+js/music.js           BGM の曲（コード進行とメロディ）・スタイル（自動編曲）・楽器
 js/input.js           タッチ・キーボード操作、ズーム防止
 js/storage.js         進みぐあいの保存
 js/config.js          ジャンプの高さや速さなどの数値

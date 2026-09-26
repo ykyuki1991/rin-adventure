@@ -3,7 +3,7 @@
 //   作業フォルダには hires/rinP_jump.png（HIRES=<作業フォルダ>/hires node tools/art/rin/extract.cjs で作る）と
 //   fonts/MPLUSRounded1c-ExtraBold.ttf（Google Fonts の M PLUS Rounded 1c）を置く
 //   出力: icon-1024.png（ふつうのアイコン）/ mask-1024.png（Android の丸などに切られても大丈夫な版）/ og.png（1200×630）
-//   そのあと 180・192・512 に縮めて icons/ に入れる。og.png は icons/og.jpg に
+//   そのあと 180・192・512 に縮めて icons/ に入れる。og.png は icons/og2.jpg に（LINE は画像を長く覚えているので、作り直したら名前を変える）
 const { chromium } = require('playwright');
 const fs = require('fs');
 const SP = process.argv[2], OUT = process.argv[3];
@@ -12,7 +12,7 @@ const RIN = b64(SP + '/hires/rinP_jump.png');
 const FONT = 'data:font/ttf;base64,' + fs.readFileSync(SP + '/fonts/MPLUSRounded1c-ExtraBold.ttf').toString('base64');
 
 // 神戸の景色（viewBox 0 0 1000 1000 の下のほう）
-const scene = (W, H, TX) => `
+const scene = (W, H, TX, og) => `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="position:absolute;inset:0">
  <defs>
   <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fb4f2"/><stop offset="0.62" stop-color="#9fdcfa"/><stop offset="1" stop-color="#e6f7ff"/></linearGradient>
@@ -27,7 +27,7 @@ const scene = (W, H, TX) => `
  <path d="M0 ${H * 0.66} C ${W * 0.12} ${H * 0.55} ${W * 0.25} ${H * 0.52} ${W * 0.38} ${H * 0.58} S ${W * 0.62} ${H * 0.5} ${W * 0.78} ${H * 0.56} S ${W * 0.95} ${H * 0.55} ${W} ${H * 0.6} L ${W} ${H} L 0 ${H} Z" fill="#8cc9a4"/>
  <path d="M0 ${H * 0.7} C ${W * 0.2} ${H * 0.63} ${W * 0.35} ${H * 0.66} ${W * 0.5} ${H * 0.64} S ${W * 0.8} ${H * 0.66} ${W} ${H * 0.64} L ${W} ${H} L 0 ${H} Z" fill="#6fb88e"/>
  <!-- 街 -->
- ${city(W, H, TX)}
+ ${city(W, H, TX, og)}
  <!-- 海 -->
  <rect y="${H * 0.8}" width="${W}" height="${H * 0.2}" fill="url(#sea)"/>
  ${[0.83, 0.87, 0.92, 0.96].map((y, i) => `<path d="M${(i * 137) % 200 - 100} ${H * y} ${Array.from({ length: 14 }, (_, k) => `q ${W / 28} ${-H * 0.008} ${W / 14} 0`).join(' ')}" fill="none" stroke="#ffffff" stroke-opacity="0.45" stroke-width="${W / 220}" stroke-linecap="round"/>`).join('')}
@@ -35,14 +35,14 @@ const scene = (W, H, TX) => `
 function cloud(x, y, s) {
   return `<g transform="translate(${x} ${y}) scale(${s})" fill="#ffffff"><ellipse cx="0" cy="20" rx="110" ry="34"/><circle cx="-40" cy="0" r="46"/><circle cx="20" cy="-18" r="58"/><circle cx="72" cy="8" r="40"/></g>`;
 }
-function city(W, H, TX) {
+function city(W, H, TX, og) {
   const base = H * 0.8, out = [];
   // ビル
   let x = 0, i = 0;
   const hs = [0.1, 0.16, 0.12, 0.2, 0.09, 0.14, 0.11, 0.18, 0.08, 0.13, 0.1, 0.15];
   while (x < W) { const w = W * (0.045 + (i % 3) * 0.012), h = H * hs[i % hs.length] * 0.9; out.push(`<rect x="${x}" y="${base - h}" width="${w - W * 0.006}" height="${h}" rx="${W * 0.004}" fill="${i % 2 ? '#f4f8fb' : '#dfe9f1'}"/>`); for (let yy = base - h + H * 0.02; yy < base - H * 0.015; yy += H * 0.03) out.push(`<rect x="${x + W * 0.008}" y="${yy}" width="${w - W * 0.022}" height="${H * 0.008}" fill="#a9c3d8" opacity="0.8"/>`); x += w; i++; }
   // 海洋博物館（白い帆の屋根）
-  const mx = W * (TX > 0.85 ? 0.52 : 0.46), mw = W * 0.24;
+  const mx = W * (og ? 0.04 : 0.46), mw = W * (og ? 0.22 : 0.24);
   out.push(`<path d="M${mx} ${base} L${mx} ${base - H * 0.05} Q ${mx + mw * 0.3} ${base - H * 0.08} ${mx + mw * 0.45} ${base - H * 0.17} Q ${mx + mw * 0.62} ${base - H * 0.07} ${mx + mw} ${base - H * 0.12} Q ${mx + mw * 0.85} ${base - H * 0.05} ${mx + mw} ${base - H * 0.04} L ${mx + mw} ${base} Z" fill="#ffffff" stroke="#b8d2e4" stroke-width="${W * 0.003}"/>`);
   for (let k = 1; k < 9; k++) out.push(`<path d="M${mx + mw * k / 9} ${base - H * 0.045} L ${mx + mw * 0.45 + (k - 4.5) * W * 0.006} ${base - H * 0.16 + Math.abs(k - 4.5) * H * 0.012}" stroke="#c5d9e8" stroke-width="${W * 0.002}"/>`);
   // ポートタワー（上と下が広がった つづみ形・赤い格子）
@@ -72,12 +72,12 @@ html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden}
 .logo span{display:inline-block;-webkit-text-stroke: ${H*0.018}px #ffffff;paint-order: stroke fill;text-shadow:0 ${H*0.012}px 0 #1d3557, 0 ${H*0.02}px ${H*0.02}px rgba(0,0,0,0.25)}
 .star{position:absolute;color:#ffd23f;-webkit-text-stroke:0.06em #ffffff;paint-order:stroke fill;text-shadow:0 0.05em 0 rgba(200,120,0,0.6);line-height:1}
 .sub{position:absolute;font-family:R;font-weight:800;color:#1d3557;background:rgba(255,255,255,0.92);border-radius:999px;white-space:nowrap}
-</style></head><body><svg width="0" height="0" style="position:absolute"><filter id="stk"><feMorphology in="SourceAlpha" operator="dilate" radius="${Math.round(W * 0.007)}" result="d"/><feFlood flood-color="#ffffff"/><feComposite in2="d" operator="in" result="o"/><feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge></filter></svg><div class="wrap">${scene(W, H, mode === 'og' ? 0.9 : 0.8)}
+</style></head><body><svg width="0" height="0" style="position:absolute"><filter id="stk"><feMorphology in="SourceAlpha" operator="dilate" radius="${Math.round(W * 0.007)}" result="d"/><feFlood flood-color="#ffffff"/><feComposite in2="d" operator="in" result="o"/><feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge></filter></svg><div class="wrap">${scene(W, H, mode === 'og' ? 0.88 : 0.8, mode === 'og')}
 ${mode === 'og' ? `
-  <img class="rin" src="${RIN}" style="left:${W*0.03}px;top:${H*0.12}px;height:${H*0.82}px">
-  <div class="logo" style="left:${W*0.37}px;top:${H*0.1}px;font-size:${H*0.175}px">${[['り','#ff5a5f'],['ん','#ffb703'],['の','#8ac926'],['大','#4cc9f0'],['冒','#9b5de5'],['険','#ff70a6']].map(([c,col],i)=>`<span style="color:${col};transform:translateY(${i%2?-H*0.012:H*0.012}px) rotate(${i%2?3:-3}deg)">${c}</span>`).join('')}</div>
-  <div class="sub" style="left:${W*0.395}px;top:${H*0.44}px;font-size:${H*0.052}px;padding:${H*0.018}px ${H*0.045}px">〜 神戸の夜景を 取りもどせ 〜</div>
-
+  <div class="logo" style="left:50%;transform:translateX(-50%);top:${H*0.05}px;font-size:${H*0.135}px">${[['り','#ff5a5f'],['ん','#ffb703'],['の','#8ac926'],['大','#4cc9f0'],['冒','#9b5de5'],['険','#ff70a6']].map(([c,col],i)=>`<span style="color:${col};transform:translateY(${i%2?-H*0.01:H*0.01}px) rotate(${i%2?3:-3}deg)">${c}</span>`).join('')}</div>
+  <img class="rin" src="${RIN}" style="left:50%;transform:translateX(-46%);top:${H*0.3}px;height:${H*0.68}px">
+  <div class="star" style="left:${W*0.3}px;top:${H*0.36}px;font-size:${H*0.1}px">★</div>
+  <div class="star" style="left:${W*0.64}px;top:${H*0.33}px;font-size:${H*0.07}px">★</div>
 ` : `
   <div class="star" style="left:${W*0.7}px;top:${H*0.1}px;font-size:${W*0.13}px">★</div>
   <div class="star" style="left:${W*0.86}px;top:${H*0.22}px;font-size:${W*0.07}px">★</div>

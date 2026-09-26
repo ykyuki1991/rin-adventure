@@ -1,4 +1,6 @@
 // 効果音とBGM（ファイルを使わず、その場で音を作っています）
+// BGM の曲と楽器は js/music.js
+import { SONGS, JINGLES, compileSong, INST, MIX, drumHit, makeImpulse } from './music.js';
 
 const NOTE = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11 };
 function freq(n) {
@@ -8,225 +10,8 @@ function freq(n) {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
-// 1文字 = 8分音符1つ。「-」は前の音をのばす、「.」は休み
-// ドラム: k=キック s=スネア h=ハイハット
-function parse(str) {
-  const toks = str.trim().split(/\s+/).filter(t => t !== '|');
-  const events = [];
-  let cur = null;
-  toks.forEach((t, i) => {
-    if (t === '-') { if (cur) cur.len++; return; }
-    if (t === '.') { cur = null; return; }
-    cur = { step: i, len: 1, note: t };
-    events.push(cur);
-  });
-  return { events, length: toks.length };
-}
-
-const SONGS = {
-  field: {
-    bpm: 150,
-    voices: [
-      { wave: 'pulse25', gain: 0.075, notes: `
-        G4 C5 E5 G5 - E5 C5 E5 | F5 - A5 - G5 - E5 - | D5 E5 F5 D5 - B4 C5 D5 | E5 - C5 - G4 - . . |
-        G4 C5 E5 G5 - E5 C5 E5 | A5 - G5 - F5 - E5 - | D5 - G5 - F5 E5 D5 B4 | C5 - - - . . . . ` },
-      { wave: 'triangle', gain: 0.16, notes: `
-        C3 . G3 . C3 . G3 . | F2 . C3 . F2 . C3 . | G2 . D3 . G2 . D3 . | C3 . G3 . C3 . E3 . |
-        C3 . G3 . C3 . G3 . | A2 . E3 . F2 . C3 . | G2 . D3 . G2 . B2 . | C3 . G2 . C3 . . . ` },
-      { wave: 'drum', gain: 0.05, notes: `
-        k . h . s . h . | k . h . s . h h | k . h . s . h . | k . h . s . h h |
-        k . h . s . h . | k . h . s . h h | k . h . s . h . | k . k . s . . . ` }
-    ]
-  },
-  cave: {
-    bpm: 112,
-    voices: [
-      { wave: 'triangle', gain: 0.12, notes: `
-        A4 . C5 . E5 . C5 . | G4 . B4 . D5 . B4 . | F4 . A4 . C5 . A4 . | E4 . G#4 . B4 . E5 . |
-        A4 . C5 . E5 . C5 . | G4 . B4 . D5 . B4 . | F4 . A4 . C5 . A4 . | E4 . G#4 . B4 . E5 . ` },
-      { wave: 'pulse12', gain: 0.05, notes: `
-        . . . . . . . . | . . . . . . . . | . . . . . . . . | . . . . . . . . |
-        E5 - - D5 C5 - B4 - | A4 - - - . . . . | F5 - E5 - D5 - C5 - | B4 - - - G#4 - - - ` },
-      { wave: 'triangle', gain: 0.14, notes: `
-        A2 - - - - - - - | G2 - - - - - - - | F2 - - - - - - - | E2 - - - - - - - |
-        A2 - - - - - - - | G2 - - - - - - - | F2 - - - - - - - | E2 - - - E2 - - - ` },
-      { wave: 'drum', gain: 0.035, notes: `
-        k . . . h . . . | k . . . h . . . | k . . . h . . . | k . . . h . h . |
-        k . . . h . . . | k . . . h . . . | k . . . h . . . | k . . . h . h . ` }
-    ]
-  },
-  sky: {
-    bpm: 132,
-    voices: [
-      { wave: 'pulse25', gain: 0.07, notes: `
-        C5 - F5 - A5 - G5 F5 | G5 - - - C5 - - - | D5 - G5 - A#5 - A5 G5 | A5 - - - F5 - - - |
-        C5 - F5 - A5 - C6 - | D6 - C6 A#5 A5 - F5 - | G5 - A5 - A#5 - E5 - | F5 - - - . . . . ` },
-      { wave: 'triangle', gain: 0.15, notes: `
-        F2 . C3 . F3 . C3 . | C3 . G3 . C3 . G3 . | A#2 . F3 . D3 . A3 . | F2 . C3 . F3 . A3 . |
-        F2 . C3 . F3 . C3 . | A#2 . F3 . D3 . A3 . | C3 . G3 . C3 . E3 . | F2 . C3 . F3 . . . ` },
-      { wave: 'drum', gain: 0.04, notes: `
-        k . h h s . h . | k . h h s . h . | k . h h s . h . | k . h h s . h h |
-        k . h h s . h . | k . h h s . h . | k . h h s . h . | k . s . s . s . ` }
-    ]
-  },
-  castle: {
-    bpm: 150,
-    voices: [
-      { wave: 'pulse25', gain: 0.065, notes: `
-        D5 - - F5 E5 - D5 - | C5 - - - A4 - - - | A#4 - - D5 C5 - A#4 - | A4 - - - C#5 - - - |
-        D5 - - F5 A5 - G5 F5 | E5 - - - C5 - E5 - | F5 - E5 - D5 - C#5 - | D5 - - - . . . . ` },
-      { wave: 'sawtooth', gain: 0.045, notes: `
-        D2 D3 D2 D3 D2 D3 D2 D3 | C2 C3 C2 C3 C2 C3 C2 C3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | A1 A2 A1 A2 A1 A2 A1 A2 |
-        D2 D3 D2 D3 D2 D3 D2 D3 | C2 C3 C2 C3 C2 C3 C2 C3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | A1 A2 A1 A2 A1 A2 A1 A2 ` },
-      { wave: 'drum', gain: 0.045, notes: `
-        k . h . s . h . | k . h . s . h . | k . h . s . h . | k . h . s . s s |
-        k . h . s . h . | k . h . s . h . | k . h . s . h . | k . s . s . s s ` }
-    ]
-  },
-  zoo: {
-    bpm: 140,
-    voices: [
-      { wave: 'pulse25', gain: 0.07, notes: `
-        G4 . B4 D5 G5 - D5 . | E5 . C5 . A4 - . . | F#4 . A4 D5 F#5 - D5 . | G5 - - - . . . . |
-        B4 . D5 G5 B5 - G5 . | C6 . A5 . F#5 - D5 . | E5 . D5 . C5 . A4 . | G4 - - - . . . . ` },
-      { wave: 'triangle', gain: 0.16, notes: `
-        G2 . D3 . G2 . D3 . | C3 . G3 . A2 . E3 . | D3 . A3 . D3 . A3 . | G2 . D3 . G2 . . . |
-        G2 . D3 . G2 . D3 . | A2 . E3 . D3 . A3 . | C3 . G3 . D3 . A3 . | G2 . D3 . G2 . . . ` },
-      { wave: 'drum', gain: 0.045, notes: `
-        k . h . s . h . | k . h . s . h . | k . h . s . h . | k . h . s . s . |
-        k . h . s . h . | k . h . s . h . | k . h . s . h . | k . k . s . . . ` }
-    ]
-  },
-  kitano: {
-    bpm: 132,
-    voices: [
-      { wave: 'pulse12', gain: 0.07, notes: `
-        F5 - - A5 - C6 | A#5 - - G5 - - | E5 - - G5 - A#5 | A5 - - F5 - - |
-        D5 - - F5 - A5 | G5 - - E5 - C5 | F5 - - E5 - G5 | F5 - - - - - ` },
-      { wave: 'triangle', gain: 0.15, notes: `
-        F3 - C4 A3 - C4 | G3 - D4 A#3 - D4 | C3 - G3 E3 - G3 | F3 - C4 A3 - C4 |
-        D3 - A3 F3 - A3 | C3 - G3 E3 - G3 | C3 - G3 E3 - A#3 | F3 - C4 A3 - C4 ` },
-      { wave: 'drum', gain: 0.03, notes: `
-        k . h . h . | k . h . h . | k . h . h . | k . h . h . |
-        k . h . h . | k . h . h . | k . h . h . | k . h . h . ` }
-    ]
-  },
-  city: {
-    bpm: 138,
-    voices: [
-      { wave: 'pulse25', gain: 0.065, notes: `
-        D5 . F#5 A5 . F#5 B5 A5 | G5 . E5 . C#5 . E5 . | D5 . F#5 A5 . D6 C#6 B5 | A5 - - - . . . . |
-        B5 . A5 G5 . F#5 E5 . | A5 . G5 F#5 . E5 D5 . | E5 . F#5 G5 . A5 B5 C#6 | D6 - - - . . . . ` },
-      { wave: 'triangle', gain: 0.16, notes: `
-        D3 D3 . D3 A2 . D3 . | E3 E3 . E3 A2 . E3 . | D3 D3 . D3 A2 . D3 . | A2 A2 . A2 E3 . A2 . |
-        G2 G2 . G2 D3 . G2 . | F#2 F#2 . F#2 C#3 . F#2 . | E2 E2 . E2 B2 . A2 . | D3 . A2 . D3 . . . ` },
-      { wave: 'drum', gain: 0.05, notes: `
-        k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s |
-        k h s h k k s h | k h s h k k s h | k h s h k k s h | k . s . k s s s ` }
-    ]
-  },
-  night: {
-    bpm: 104,
-    voices: [
-      { wave: 'triangle', gain: 0.14, notes: `
-        E5 - - G5 A5 - - . | C6 - B5 A5 G5 - - . | F5 - - A5 G5 - E5 . | D5 - - - - - . . |
-        E5 - - G5 A5 - - . | C6 - D6 C6 A5 - G5 . | F5 - E5 - D5 - B4 . | C5 - - - - - . . ` },
-      { wave: 'pulse12', gain: 0.03, notes: `
-        C5 . E5 . C5 . E5 . | A4 . C5 . A4 . C5 . | F4 . A4 . F4 . A4 . | G4 . B4 . G4 . B4 . |
-        C5 . E5 . C5 . E5 . | A4 . C5 . A4 . C5 . | F4 . A4 . G4 . B4 . | E4 . G4 . C5 . . . ` },
-      { wave: 'triangle', gain: 0.13, notes: `
-        A2 . E3 . A2 . E3 . | F2 . C3 . F2 . C3 . | D2 . A2 . D2 . A2 . | G2 . D3 . G2 . B2 . |
-        A2 . E3 . A2 . E3 . | F2 . C3 . F2 . C3 . | D2 . A2 . G2 . D3 . | C3 . G2 . C3 . . . ` },
-      { wave: 'drum', gain: 0.025, notes: `
-        h . h s h . h . | h . h s h . h . | h . h s h . h . | h . h s h . h h |
-        h . h s h . h . | h . h s h . h . | h . h s h . h . | h . h s h . . . ` }
-    ]
-  },
-  beach: {
-    bpm: 144,
-    voices: [
-      { wave: 'pulse25', gain: 0.07, notes: `
-        C5 . F5 . A5 . G5 F5 | G5 . . . A5 . . . | A#5 . A5 . G5 . F5 . | G5 - - - . . . . |
-        C5 . F5 . A5 . C6 A5 | D6 . C6 . A#5 . A5 . | G5 . A5 . A#5 . E5 . | F5 - - - . . . . ` },
-      { wave: 'triangle', gain: 0.16, notes: `
-        F2 . . F3 C3 . A2 . | C3 . . C3 G2 . E2 . | A#2 . . A#2 F2 . D3 . | C3 . . C3 G2 . C3 . |
-        F2 . . F3 C3 . A2 . | A#2 . . A#2 F2 . D3 . | C3 . . C3 G2 . E2 . | F2 . C3 . F2 . . . ` },
-      { wave: 'drum', gain: 0.045, notes: `
-        k . h s . h s h | k . h s . h s h | k . h s . h s h | k . h s . h s s |
-        k . h s . h s h | k . h s . h s h | k . h s . h s h | k . s . s . . . ` }
-    ]
-  },
-  bridge: {
-    bpm: 150,
-    voices: [
-      { wave: 'pulse25', gain: 0.07, notes: `
-        A4 . D5 . F#5 . A5 - | - . G5 F#5 E5 . D5 . | B4 . E5 . G5 . B5 - | - . A5 G5 F#5 . E5 . |
-        F#5 . A5 . D6 . C#6 . | B5 . A5 . G5 . F#5 . | E5 . F#5 . G5 . A5 . | D5 - - - . . . . ` },
-      { wave: 'triangle', gain: 0.16, notes: `
-        D3 . A3 . D3 . A3 . | D3 . A3 . D3 . A3 . | G2 . D3 . G2 . D3 . | A2 . E3 . A2 . E3 . |
-        D3 . A3 . B2 . F#3 . | G2 . D3 . E2 . B2 . | A2 . E3 . A2 . C#3 . | D3 . A2 . D3 . . . ` },
-      { wave: 'drum', gain: 0.05, notes: `
-        k . h . s . h h | k . h . s . h h | k . h . s . h h | k . h . s . s s |
-        k . h . s . h h | k . h . s . h h | k . h . s . h h | k . s . s s s s ` }
-    ]
-  },
-  boss: {
-    bpm: 176,
-    voices: [
-      { wave: 'pulse25', gain: 0.065, notes: `
-        E5 . E5 G5 . E5 B5 A5 | G5 . F#5 . E5 . D#5 . | E5 . E5 G5 . B5 D6 C6 | B5 - - - D#5 - - - ` },
-      { wave: 'sawtooth', gain: 0.05, notes: `
-        E2 E3 E2 E3 G2 G3 G2 G3 | A2 A3 A2 A3 B2 B3 B2 B3 | E2 E3 E2 E3 G2 G3 G2 G3 | B1 B2 B1 B2 B1 B2 B1 B2 ` },
-      { wave: 'drum', gain: 0.05, notes: `
-        k h s h k h s h | k h s h k h s s | k h s h k h s h | k k s h k k s s ` }
-    ]
-  },
-  star: {
-    bpm: 200,
-    voices: [
-      { wave: 'pulse25', gain: 0.06, notes: `
-        C5 E5 G5 C6 G5 E5 C5 E5 | D5 F5 A5 D6 A5 F5 D5 F5 | C5 E5 G5 C6 G5 E5 C5 E5 | B4 D5 G5 B5 G5 D5 B4 D5 ` },
-      { wave: 'triangle', gain: 0.15, notes: `
-        C3 . C3 . C3 . C3 . | D3 . D3 . D3 . D3 . | C3 . C3 . C3 . C3 . | G2 . G2 . G2 . G2 . ` },
-      { wave: 'drum', gain: 0.045, notes: `
-        k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k s s s ` }
-    ]
-  }
-};
-
-const JINGLES = {
-  clear: {
-    bpm: 200,
-    voices: [
-      { wave: 'pulse25', gain: 0.08, notes: `G4 C5 E5 G5 C6 E6 G6 - - - E6 - - - C6 D6 E6 - - - - - - - . .` },
-      { wave: 'triangle', gain: 0.16, notes: `C3 - - - E3 - - - G3 - - - C4 - - - A#3 - - - C4 - - - - - . .` }
-    ]
-  },
-  ending: {
-    bpm: 150,
-    voices: [
-      { wave: 'pulse25', gain: 0.08, notes: `C5 E5 G5 C6 - - A5 - F5 - A5 - C6 - - - D6 - C6 - B5 - G5 - C6 - - - - - - - . .` },
-      { wave: 'triangle', gain: 0.16, notes: `C3 - - - - - F3 - - - - - - - - - G3 - - - - - - - C3 - - - - - - - . .` }
-    ]
-  },
-  die: {
-    bpm: 180,
-    voices: [
-      { wave: 'pulse25', gain: 0.08, notes: `E5 D#5 D5 C#5 C5 - - - B4 - - - A4 - - - . .` },
-      { wave: 'triangle', gain: 0.14, notes: `C3 - - - B2 - - - A#2 - - - A2 - - - . .` }
-    ]
-  },
-  gameover: {
-    bpm: 120,
-    voices: [
-      { wave: 'pulse25', gain: 0.08, notes: `A4 - F4 - D4 - - - E4 F4 E4 D4 C#4 - D4 - - - . .` },
-      { wave: 'triangle', gain: 0.14, notes: `D3 - - - A#2 - - - A2 - - - D2 - - - - - . .` }
-    ]
-  }
-};
-for (const s of [...Object.values(SONGS), ...Object.values(JINGLES)]) {
-  for (const v of s.voices) Object.assign(v, parse(v.notes));
-}
+const COMPILED = {};
+const compiled = (name, def, loop) => (COMPILED[name] ||= compileSong({ ...def, loop }));
 
 export class Sound {
   constructor() {
@@ -254,6 +39,7 @@ export class Sound {
         this.sfxGain.gain.value = 1;
         this.sfxGain.connect(this.master);
         this.makeWaves();
+        this.makeFx();
         const buf = this.ctx.createBuffer(1, 1, 22050);
         const src = this.ctx.createBufferSource();
         src.buffer = buf; src.connect(this.ctx.destination); src.start(0);
@@ -275,6 +61,19 @@ export class Sound {
     this.noise = c.createBuffer(1, len, c.sampleRate);
     const d = this.noise.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  }
+
+  // リバーブとディレイ（曲の音に ひろがりをつける）
+  makeFx() {
+    const c = this.ctx;
+    try {
+      this.reverb = c.createConvolver(); this.reverb.buffer = makeImpulse(c, 1.8);
+      const rg = c.createGain(); rg.gain.value = 0.55; this.reverb.connect(rg); rg.connect(this.musicGain);
+      this.delay = c.createDelay(1.5); this.delay.delayTime.value = 0.3;
+      const fb = c.createGain(); fb.gain.value = 0.32; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2500;
+      this.delay.connect(lp); lp.connect(fb); fb.connect(this.delay);
+      const dg = c.createGain(); dg.gain.value = 0.5; lp.connect(dg); dg.connect(this.musicGain); dg.connect(this.reverb);
+    } catch (_) { this.reverb = null; this.delay = null; }
   }
 
   setMuted(m) {
@@ -382,32 +181,52 @@ export class Sound {
   playBgm(name) {
     if (!this.ctx) { this.pendingSong = name; return; }
     if (this.songName === name && this.song && this.song.loop) return;
-    this.startSong(SONGS[name], name, true);
+    if (!SONGS[name]) return;
+    this.startSong(compiled(name, SONGS[name], true), SONGS[name].bpm, name, true);
   }
   playJingle(name) {
-    if (!this.ctx) return;
-    this.startSong(JINGLES[name], name, false);
+    if (!this.ctx || !JINGLES[name]) return;
+    this.startSong(compiled('j:' + name, JINGLES[name], false), JINGLES[name].bpm, name, false);
   }
   stopBgm() {
     this.pendingSong = null;
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
-    if (this.songOut) {
-      const g = this.songOut;
-      try { g.gain.setTargetAtTime(0, this.ctx.currentTime, 0.02); setTimeout(() => g.disconnect(), 300); } catch (_) {}
-      this.songOut = null;
+    if (this.songBus) {
+      const bus = this.songBus;
+      try {
+        for (const g of bus.fades) g.gain.setTargetAtTime(0, this.ctx.currentTime, 0.03);
+        setTimeout(() => { for (const n of bus.all) try { n.disconnect(); } catch (_) {} }, 400);
+      } catch (_) {}
+      this.songBus = null;
     }
     this.song = null; this.songName = null;
   }
-  startSong(song, name, loop) {
+  // 曲ごとの音の通り道：パートごとに 音量→左右→(そのまま / リバーブ / ディレイ)
+  makeBus(stepDur, vol = 1) {
+    const c = this.ctx, out = c.createGain(), rev = c.createGain(), dly = c.createGain();
+    out.gain.value = vol; rev.gain.value = vol; dly.gain.value = vol;
+    out.connect(this.musicGain);
+    if (this.reverb) rev.connect(this.reverb);
+    if (this.delay) { dly.connect(this.delay); this.delay.delayTime.setValueAtTime(Math.min(1.4, stepDur * 3), c.currentTime); }
+    const bus = { out, parts: {}, fades: [out, rev, dly], all: [out, rev, dly] };
+    for (const [name, mx] of Object.entries(MIX)) {
+      const g = c.createGain(); g.gain.value = mx.gain;
+      let node = g;
+      if (c.createStereoPanner) { const p = c.createStereoPanner(); p.pan.value = mx.pan; g.connect(p); node = p; bus.all.push(p); }
+      node.connect(out);
+      if (mx.rev) { const s = c.createGain(); s.gain.value = mx.rev; node.connect(s); s.connect(rev); bus.all.push(s); }
+      if (mx.dly) { const s = c.createGain(); s.gain.value = mx.dly; node.connect(s); s.connect(dly); bus.all.push(s); }
+      bus.parts[name] = g; bus.all.push(g);
+    }
+    return bus;
+  }
+  startSong(song, bpm, name, loop) {
     this.stopBgm();
     if (!song || !this.ctx) return;
-    const out = this.ctx.createGain();
-    out.gain.value = 1;
-    out.connect(this.musicGain);
-    this.songOut = out;
-    this.song = { def: song, loop, step: 0, next: this.ctx.currentTime + 0.06, stepDur: 60 / song.bpm / 2,
-      length: Math.max(...song.voices.map(v => v.length)) };
+    const stepDur = 60 / bpm / 4;
+    this.songBus = this.makeBus(stepDur, song.style.vol || 1);
+    this.song = { def: song, loop, step: 0, next: this.ctx.currentTime + 0.06, stepDur, length: song.length };
     this.songName = name;
     const tick = () => this.schedule();
     tick();
@@ -415,19 +234,23 @@ export class Sound {
   }
   schedule() {
     const s = this.song;
-    if (!s || !this.ctx) return;
-    const ahead = this.ctx.currentTime + 0.15;
+    if (!s || !this.ctx || !this.songBus) return;
+    const ahead = this.ctx.currentTime + 0.2;
+    // 画面がかくれて時間がとんだときは、追いつこうとせずに今から続ける
+    if (s.next < this.ctx.currentTime - 0.5) s.next = this.ctx.currentTime + 0.05;
+    const swing = s.def.style.swing || 0;
     while (s.next < ahead) {
       if (s.step >= s.length) {
         if (!s.loop) { this.stopAfter(s.next); return; }
         s.step = 0;
       }
-      for (const v of s.def.voices) {
-        for (const ev of v.events) {
-          if (ev.step !== s.step) continue;
-          if (v.wave === 'drum') this.drum(ev.note, s.next, v.gain, this.songOut);
-          else this.osc(v.wave, freq(ev.note), s.next, ev.len * s.stepDur * 0.95, v.gain, this.songOut, { pluck: v.wave === 'triangle' && s.def.bpm < 120 });
-        }
+      const t = s.next + (swing && s.step % 4 === 2 ? swing * 2 * s.stepDur : 0);
+      for (const ev of s.def.events[s.step] || []) {
+        const dest = this.songBus.parts[ev.part];
+        try {
+          if (ev.part === 'drum') drumHit(this, ev.kind, t, ev.vel, dest);
+          else if (ev.m !== null && INST[ev.inst]) INST[ev.inst](this, t, ev.m, ev.len * s.stepDur * 0.95, ev.vel, dest);
+        } catch (_) { /* 音が出せなくてもゲームは続ける */ }
       }
       s.step++;
       s.next += s.stepDur;
