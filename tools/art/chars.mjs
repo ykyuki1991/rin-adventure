@@ -1,6 +1,9 @@
 // りん（主人公）。部品（頭・体・うで・あし）を組み合わせてポーズを作る
 // 座標は 0.1ドット単位で、足元のまん中が (0,0)。上がマイナス
-import { sprite } from './registry.mjs';
+import { readFileSync, existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { sprite, dropSprites } from './registry.mjs';
 import { tr, g, path, ell, circ, rrect, rect, f } from './svg.mjs';
 
 export const C = {
@@ -191,3 +194,20 @@ sprite('chars', 'rin/dead', W, H, AX, AY, defs => tr(AX, AY, [
 
 // HUD の顔アイコン
 sprite('chars', 'rin/icon', 16, 15, 8, 7.5, defs => tr(7.2, 20, head(defs, 'smile', 'normal'), 0.1));
+
+// ========================================================================
+// キャラ表から切り出した絵（tools/art/rin/extract.cjs で作る）があれば、りん はそちらを使う
+// 上の SVG の りん は、切り出した絵がないときの予備
+// ========================================================================
+{
+  const dir = join(dirname(fileURLToPath(import.meta.url)), 'rin');
+  const meta = join(dir, 'frames.json');
+  if (existsSync(meta)) {
+    const frames = JSON.parse(readFileSync(meta, 'utf8'));
+    dropSprites(n => /^rinP?\//.test(n));
+    for (const [name, fr] of Object.entries(frames)) {
+      const b64 = readFileSync(join(dir, 'frames', fr.file)).toString('base64');
+      sprite('rin', name, fr.w, fr.h, fr.ax, fr.ay, () => `<image x="0" y="0" width="${fr.w}" height="${fr.h}" preserveAspectRatio="none" href="data:image/png;base64,${b64}"/>`);
+    }
+  }
+}
