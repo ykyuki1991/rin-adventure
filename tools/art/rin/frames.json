@@ -1,198 +1,261 @@
 {
- "rin/idle0": {
-  "file": "rin_idle0.png",
-  "w": 15.833,
-  "h": 24.833,
-  "ax": 7.83,
-  "ay": 24.03
+ "sheet": {
+  "file": "art/rin.png",
+  "w": 512,
+  "h": 58
  },
- "rinP/idle0": {
-  "file": "rinP_idle0.png",
-  "w": 15.833,
-  "h": 24.833,
-  "ax": 7.83,
-  "ay": 24.03
- },
- "rin/idle1": {
-  "file": "rin_idle1.png",
-  "w": 15.833,
-  "h": 25.5,
-  "ax": 7.83,
-  "ay": 24.75
- },
- "rinP/idle1": {
-  "file": "rinP_idle1.png",
-  "w": 15.833,
-  "h": 25.5,
-  "ax": 7.83,
-  "ay": 24.75
- },
- "rin/blink": {
-  "file": "rin_blink.png",
-  "w": 15.833,
-  "h": 24.833,
-  "ax": 7.83,
-  "ay": 24.03
- },
- "rinP/blink": {
-  "file": "rinP_blink.png",
-  "w": 15.833,
-  "h": 24.833,
-  "ax": 7.83,
-  "ay": 24.03
- },
- "rin/run0": {
-  "file": "rin_run0.png",
-  "w": 16.167,
-  "h": 24.667,
-  "ax": 7.11,
-  "ay": 23.85
- },
- "rinP/run0": {
-  "file": "rinP_run0.png",
-  "w": 18.667,
-  "h": 24.833,
-  "ax": 10.215,
-  "ay": 23.94
- },
- "rin/run1": {
-  "file": "rin_run1.png",
-  "w": 15.667,
-  "h": 24.833,
-  "ax": 7.2,
-  "ay": 23.94
- },
- "rinP/run1": {
-  "file": "rinP_run1.png",
-  "w": 17.667,
-  "h": 23.167,
-  "ax": 10.26,
-  "ay": 22.23
- },
- "rin/run2": {
-  "file": "rin_run2.png",
-  "w": 14.333,
-  "h": 23,
-  "ax": 7.065,
-  "ay": 22.23
- },
- "rinP/run2": {
-  "file": "rinP_run2.png",
-  "w": 18.667,
-  "h": 24.833,
-  "ax": 10.215,
-  "ay": 23.94
- },
- "rin/run3": {
-  "file": "rin_run3.png",
-  "w": 15.667,
-  "h": 24.833,
-  "ax": 7.2,
-  "ay": 23.94
- },
- "rinP/run3": {
-  "file": "rinP_run3.png",
-  "w": 17.667,
-  "h": 23.167,
-  "ax": 10.26,
-  "ay": 22.23
- },
- "rin/jump": {
-  "file": "rin_jump.png",
-  "w": 16.333,
-  "h": 25.833,
-  "ax": 8.145,
-  "ay": 22.59
- },
- "rinP/jump": {
-  "file": "rinP_jump.png",
-  "w": 19.333,
-  "h": 26.667,
-  "ax": 11.205,
-  "ay": 23.49
- },
- "rin/fall": {
-  "file": "rin_fall.png",
-  "w": 14.333,
-  "h": 23.833,
-  "ax": 7.11,
-  "ay": 20.34
- },
- "rinP/fall": {
-  "file": "rinP_fall.png",
-  "w": 18.667,
-  "h": 24.833,
-  "ax": 10.17,
-  "ay": 21.42
- },
- "rin/skid": {
-  "file": "rin_skid.png",
-  "w": 14.333,
-  "h": 22.333,
-  "ax": 7.02,
-  "ay": 21.6
- },
- "rinP/skid": {
-  "file": "rinP_skid.png",
-  "w": 18.667,
-  "h": 24.833,
-  "ax": 10.26,
-  "ay": 22.32
- },
- "rin/climb0": {
-  "file": "rin_climb0.png",
-  "w": 15.333,
-  "h": 23.167,
-  "ax": 7.515,
-  "ay": 22.59
- },
- "rinP/climb0": {
-  "file": "rinP_climb0.png",
-  "w": 15.333,
-  "h": 24.167,
-  "ax": 8.415,
-  "ay": 22.59
- },
- "rin/climb1": {
-  "file": "rin_climb1.png",
-  "w": 15.5,
-  "h": 22.667,
-  "ax": 7.65,
-  "ay": 21.87
- },
- "rinP/climb1": {
-  "file": "rinP_climb1.png",
-  "w": 15.5,
-  "h": 23.333,
-  "ax": 8.64,
-  "ay": 21.87
- },
- "rin/win": {
-  "file": "rin_win.png",
-  "w": 15.333,
-  "h": 22.667,
-  "ax": 6.66,
-  "ay": 21.96
- },
- "rinP/win": {
-  "file": "rinP_win.png",
-  "w": 15.333,
-  "h": 23.333,
-  "ax": 6.66,
-  "ay": 22.41
- },
- "rin/dead": {
-  "file": "rin_dead.png",
-  "w": 15.333,
-  "h": 22.833,
-  "ax": 7.56,
-  "ay": 22.05
- },
- "rin/icon": {
-  "file": "rin_icon.png",
-  "w": 16.333,
-  "h": 16.167,
-  "ax": 8.092,
-  "ay": 8
+ "frames": {
+  "rin/idle0": {
+   "file": "rin_idle0.png",
+   "w": 15.833,
+   "h": 24.833,
+   "ax": 7.83,
+   "ay": 24.03,
+   "sx": 82.333,
+   "sy": 3
+  },
+  "rinP/idle0": {
+   "file": "rinP_idle0.png",
+   "w": 15.833,
+   "h": 24.833,
+   "ax": 7.83,
+   "ay": 24.03,
+   "sx": 101.167,
+   "sy": 3
+  },
+  "rin/idle1": {
+   "file": "rin_idle1.png",
+   "w": 15.833,
+   "h": 25.5,
+   "ax": 7.83,
+   "ay": 24.75,
+   "sx": 44.667,
+   "sy": 3
+  },
+  "rinP/idle1": {
+   "file": "rinP_idle1.png",
+   "w": 15.833,
+   "h": 25.5,
+   "ax": 7.83,
+   "ay": 24.75,
+   "sx": 63.5,
+   "sy": 3
+  },
+  "rin/blink": {
+   "file": "rin_blink.png",
+   "w": 15.833,
+   "h": 24.833,
+   "ax": 7.83,
+   "ay": 24.03,
+   "sx": 120,
+   "sy": 3
+  },
+  "rinP/blink": {
+   "file": "rinP_blink.png",
+   "w": 15.833,
+   "h": 24.833,
+   "ax": 7.83,
+   "ay": 24.03,
+   "sx": 138.833,
+   "sy": 3
+  },
+  "rin/run0": {
+   "file": "rin_run0.png",
+   "w": 16.167,
+   "h": 24.667,
+   "ax": 7.11,
+   "ay": 23.85,
+   "sx": 281.667,
+   "sy": 3
+  },
+  "rinP/run0": {
+   "file": "rinP_run0.png",
+   "w": 18.667,
+   "h": 24.833,
+   "ax": 10.215,
+   "ay": 23.94,
+   "sx": 157.667,
+   "sy": 3
+  },
+  "rin/run1": {
+   "file": "rin_run1.png",
+   "w": 15.667,
+   "h": 24.833,
+   "ax": 7.2,
+   "ay": 23.94,
+   "sx": 179.333,
+   "sy": 3
+  },
+  "rinP/run1": {
+   "file": "rinP_run1.png",
+   "w": 17.667,
+   "h": 23.167,
+   "ax": 10.26,
+   "ay": 22.23,
+   "sx": 373.333,
+   "sy": 3
+  },
+  "rin/run2": {
+   "file": "rin_run2.png",
+   "w": 14.333,
+   "h": 23,
+   "ax": 7.065,
+   "ay": 22.23,
+   "sx": 433,
+   "sy": 3
+  },
+  "rinP/run2": {
+   "file": "rinP_run2.png",
+   "w": 18.667,
+   "h": 24.833,
+   "ax": 10.215,
+   "ay": 23.94,
+   "sx": 198,
+   "sy": 3
+  },
+  "rin/run3": {
+   "file": "rin_run3.png",
+   "w": 15.667,
+   "h": 24.833,
+   "ax": 7.2,
+   "ay": 23.94,
+   "sx": 219.667,
+   "sy": 3
+  },
+  "rinP/run3": {
+   "file": "rinP_run3.png",
+   "w": 17.667,
+   "h": 23.167,
+   "ax": 10.26,
+   "ay": 22.23,
+   "sx": 394,
+   "sy": 3
+  },
+  "rin/jump": {
+   "file": "rin_jump.png",
+   "w": 16.333,
+   "h": 25.833,
+   "ax": 8.145,
+   "ay": 22.59,
+   "sx": 25.333,
+   "sy": 3
+  },
+  "rinP/jump": {
+   "file": "rinP_jump.png",
+   "w": 19.333,
+   "h": 26.667,
+   "ax": 11.205,
+   "ay": 23.49,
+   "sx": 3,
+   "sy": 3
+  },
+  "rin/fall": {
+   "file": "rin_fall.png",
+   "w": 14.333,
+   "h": 23.833,
+   "ax": 7.11,
+   "ay": 20.34,
+   "sx": 319.167,
+   "sy": 3
+  },
+  "rinP/fall": {
+   "file": "rinP_fall.png",
+   "w": 18.667,
+   "h": 24.833,
+   "ax": 10.17,
+   "ay": 21.42,
+   "sx": 238.333,
+   "sy": 3
+  },
+  "rin/skid": {
+   "file": "rin_skid.png",
+   "w": 14.333,
+   "h": 22.333,
+   "ax": 7.02,
+   "ay": 21.6,
+   "sx": 3,
+   "sy": 32.667
+  },
+  "rinP/skid": {
+   "file": "rinP_skid.png",
+   "w": 18.667,
+   "h": 24.833,
+   "ax": 10.26,
+   "ay": 22.32,
+   "sx": 260,
+   "sy": 3
+  },
+  "rin/climb0": {
+   "file": "rin_climb0.png",
+   "w": 15.333,
+   "h": 23.167,
+   "ax": 7.515,
+   "ay": 22.59,
+   "sx": 414.667,
+   "sy": 3
+  },
+  "rinP/climb0": {
+   "file": "rinP_climb0.png",
+   "w": 15.333,
+   "h": 24.167,
+   "ax": 8.415,
+   "ay": 22.59,
+   "sx": 300.833,
+   "sy": 3
+  },
+  "rin/climb1": {
+   "file": "rin_climb1.png",
+   "w": 15.5,
+   "h": 22.667,
+   "ax": 7.65,
+   "ay": 21.87,
+   "sx": 468.667,
+   "sy": 3
+  },
+  "rinP/climb1": {
+   "file": "rinP_climb1.png",
+   "w": 15.5,
+   "h": 23.333,
+   "ax": 8.64,
+   "ay": 21.87,
+   "sx": 336.5,
+   "sy": 3
+  },
+  "rin/win": {
+   "file": "rin_win.png",
+   "w": 15.333,
+   "h": 22.667,
+   "ax": 6.66,
+   "ay": 21.96,
+   "sx": 487.167,
+   "sy": 3
+  },
+  "rinP/win": {
+   "file": "rinP_win.png",
+   "w": 15.333,
+   "h": 23.333,
+   "ax": 6.66,
+   "ay": 22.41,
+   "sx": 355,
+   "sy": 3
+  },
+  "rin/dead": {
+   "file": "rin_dead.png",
+   "w": 15.333,
+   "h": 22.833,
+   "ax": 7.56,
+   "ay": 22.05,
+   "sx": 450.333,
+   "sy": 3
+  },
+  "rin/icon": {
+   "file": "rin_icon.png",
+   "w": 16.333,
+   "h": 16.167,
+   "ax": 8.092,
+   "ay": 8,
+   "sx": 20.333,
+   "sy": 32.667
+  }
  }
 }

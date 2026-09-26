@@ -17,15 +17,29 @@ async function rasterize(text, w, h, S) {
     const img = new Image();
     img.decoding = 'async';
     await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = url; });
-    const c = document.createElement('canvas');
-    c.width = W; c.height = H;
-    const ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0, W, H);
-    return c;
+    return toCanvas(img, W, H);
   } finally {
     URL.revokeObjectURL(url);
   }
 }
+// 画像を W×H の canvas にする（iPhone で メモリが足りず canvas が作れないときはエラーにする）
+function toCanvas(img, W, H) {
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  if (!ctx || c.width !== W) { free(c); throw new Error('canvas alloc failed ' + W + 'x' + H); }
+  ctx.drawImage(img, 0, 0, W, H);
+  return c;
+}
+// PNG のシート（キャラ表から切り出した りん）
+async function loadPng(url, w, h, S) {
+  const img = new Image();
+  img.decoding = 'async';
+  await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = url; });
+  return toCanvas(img, Math.ceil(w * S), Math.ceil(h * S));
+}
+// canvas のメモリをすぐに返す（iPhone の Safari は、使わなくなった canvas もしばらくメモリを使いつづけるため）
+export function free(c) { if (c && c.width) { c.width = 0; c.height = 0; } }
 
 // キャラクター・敵・アイテム・乗り物には細いふちどりをつける（背景とまざらず、見分けやすくするため）
 const OUTLINE = new Set(['chars', 'rin', 'enemies', 'items', 'pf']);
@@ -46,7 +60,19 @@ function outline(c, S) {
   ctx.fillRect(0, 0, o.width, o.height);
   ctx.globalCompositeOperation = 'source-over';
   ctx.drawImage(c, 0, 0);
+  free(c);
   return o;
+}
+// シートを1まい画像にする（SVG または PNG。ふちどりつき）
+async function makeSheet(store, name, S) {
+  const info = SHEETS[name];
+  let c;
+  if (info.png) c = await loadPng(info.file, info.w, info.h, S);
+  else {
+    if (!store.texts[name]) store.texts[name] = await loadText(info.file);
+    c = await rasterize(store.texts[name], info.w, info.h, S);
+  }
+  return OUTLINE.has(name) ? outline(c, S) : c;
 }
 
 // ステージごとのシート。そのステージを遊ぶときだけ画像にして、ほかのステージのものはメモリから外す
@@ -68,22 +94,23 @@ class ArtStore {
   }
 
   // 画面の倍率 K に合わせてシートを用意する（K が大きく変わったら作り直す）
+  // iPhone は画面が細かい（K が 5 近く）が、canvas のメモリに上限があるので 倍率は 4 までにする
   async init(K) {
-    const S = Math.max(1, Math.min(5, Math.ceil(K * 2) / 2));
+    const S = Math.max(1, Math.min(4, Math.ceil(K * 2) / 2));
     if (this.ready && Math.abs(S - this.S) < 0.5) return;
     if (this._busy) return this._busy;
     this._busy = (async () => {
-      const entries = Object.entries(SHEETS).filter(([name]) => !LAZY.has(name));
-      await Promise.all(entries.map(async ([name, info]) => {
-        if (!this.texts[name]) this.texts[name] = await loadText(info.file);
-      }));
+      const names = Object.keys(SHEETS).filter(name => !LAZY.has(name));
+      // 1まいずつ作る（1まいが失敗しても、ほかの絵は使えるように）
       const out = {};
-      for (const [name, info] of entries) { const t0 = performance.now(); out[name] = await rasterize(this.texts[name], info.w, info.h, S); if (OUTLINE.has(name)) out[name] = outline(out[name], S); if (window.__artDebug) console.log('sheet', name, (performance.now() - t0).toFixed(0)); }
+      for (const name of names) {
+        try { out[name] = await makeSheet(this, name, S); } catch (e) { console.warn('sheet', name, e); }
+      }
+      for (const [n, c] of Object.entries(this.sheets)) if (out[n] !== c) free(c);
       this.sheets = out;
       this.S = S;
       this.ready = true;
       this.version++;
-      this.bg.clear();
       await Promise.all([...this.lazyWant].map(n => this.loadSheet(n)));
     })().catch(e => { console.warn('art', e); }).finally(() => { this._busy = null; });
     return this._busy;
@@ -94,7 +121,7 @@ class ArtStore {
   // ステージのシートを用意する（names 以外のステージのシートは外す）
   async prepareSheets(names) {
     this.lazyWant = new Set(names.filter(n => SHEETS[n]));
-    for (const n of Object.keys(this.sheets)) if (LAZY.has(n) && !this.lazyWant.has(n)) delete this.sheets[n];
+    for (const n of Object.keys(this.sheets)) if (LAZY.has(n) && !this.lazyWant.has(n)) { free(this.sheets[n]); delete this.sheets[n]; }
     if (this._busy) await this._busy;
     if (!this.ready) return;
     await Promise.all([...this.lazyWant].filter(n => !this.sheets[n]).map(n => this.loadSheet(n)));
@@ -104,10 +131,12 @@ class ArtStore {
     const S = this.S, key = name + '@' + S;
     if (this.sheetLoading.has(key)) return this.sheetLoading.get(key);
     const p = (async () => {
-      if (!this.texts[name]) this.texts[name] = await loadText(SHEETS[name].file);
-      let c = await rasterize(this.texts[name], SHEETS[name].w, SHEETS[name].h, S);
-      if (OUTLINE.has(name)) c = outline(c, S);
-      if (this.S === S && this.lazyWant.has(name)) this.sheets[name] = c;
+      const c = await makeSheet(this, name, S);
+      if (this.S === S && this.lazyWant.has(name)) {
+        free(this.sheets[name]);
+        this.sheets[name] = c;
+        this.version++; // 絵がそろったので、先に描いておいたタイルを作り直す
+      } else free(c);
     })().catch(e => console.warn('sheet', name, e)).finally(() => this.sheetLoading.delete(key));
     this.sheetLoading.set(key, p);
     return p;
@@ -141,8 +170,10 @@ class ArtStore {
     const fr = FRAMES[name];
     if (!fr || !this.ready) return false;
     const [sheet, fx, fy, fw, fh, ax, ay] = fr;
+    const c = this.sheets[sheet];
+    if (!c) return false;
     const S = this.S;
-    ctx.drawImage(this.sheets[sheet], fx * S, fy * S, fw * S, fh * S, -ax, -ay, fw, fh);
+    ctx.drawImage(c, fx * S, fy * S, fw * S, fh * S, -ax, -ay, fw, fh);
     return true;
   }
 
@@ -152,9 +183,10 @@ class ArtStore {
   // 背景の層を用意する（使う場所の分だけ。ほかの場所の背景はメモリから外す）
   async prepareBg(themes, K) {
     const sheets = this.prepareSheets([...new Set(themes.map(t => STAGE_SHEETS[t]).filter(Boolean))]);
-    const S = Math.max(1, Math.min(3, Math.ceil(K * 2) / 2));
-    if (S !== this.bgS) { this.bg.clear(); this.bgS = S; }
-    for (const t of [...this.bg.keys()]) if (!themes.includes(t)) this.bg.delete(t);
+    const S = Math.max(1, Math.min(2.5, Math.ceil(K * 2) / 2));
+    const drop = t => { for (const L of this.bg.get(t) || []) free(L.canvas); this.bg.delete(t); };
+    if (S !== this.bgS) { for (const t of [...this.bg.keys()]) drop(t); this.bgS = S; }
+    for (const t of [...this.bg.keys()]) if (!themes.includes(t)) drop(t);
     await Promise.all([sheets, ...themes.filter(t => BGS[t] && !this.bg.has(t)).map(t => this.loadBg(t, S))]);
   }
 
@@ -166,10 +198,12 @@ class ArtStore {
       for (const L of BGS[theme]) {
         const text = await loadText(L.file);
         const t0 = performance.now();
-        layers.push({ canvas: await rasterize(text, L.w, L.h, S), f: L.f, w: L.w, h: L.h, y: L.y, dim: L.dim, fg: L.fg });
+        // 1まい失敗しても、ほかの層は使う
+        try { layers.push({ canvas: await rasterize(text, L.w, L.h, S), f: L.f, w: L.w, h: L.h, y: L.y, dim: L.dim, fg: L.fg }); } catch (e) { console.warn('bg', L.file, e); }
         if (window.__artDebug) console.log('bg', L.file, (performance.now() - t0).toFixed(0));
       }
-      if (this.bgS === S) this.bg.set(theme, layers);
+      if (this.bgS === S && !this.bg.has(theme)) this.bg.set(theme, layers);
+      else for (const L of layers) free(L.canvas);
     })().catch(e => console.warn('bg', theme, e)).finally(() => this.bgLoading.delete(key));
     this.bgLoading.set(key, p);
     return p;
